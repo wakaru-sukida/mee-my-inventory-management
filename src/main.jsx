@@ -34,7 +34,9 @@ setSaveHook((inst) => {
 let inst = null;
 
 async function boot() {
-  const root = createRoot(document.getElementById('root'));
+  // ใช้ root เดิมซ้ำเมื่อ Vite ทำ hot-reload (กัน createRoot ซ้ำซ้อน)
+  const container = document.getElementById('root');
+  const root = window.__meeRoot || (window.__meeRoot = createRoot(container));
   root.render(
     React.createElement(Component, {
       ref: (r) => { inst = r; },

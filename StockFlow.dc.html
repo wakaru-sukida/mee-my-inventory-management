@@ -767,20 +767,8 @@
           <div style="font-size:13px;color:var(--dim);margin-top:5px;">ระบบบริหารคลังสินค้า · เข้าสู่ระบบเพื่อใช้งาน</div>
         </div>
 
-        <label style="display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:9px;">ประเภทผู้ใช้งาน</label>
-        <div style="display:flex;gap:10px;margin-bottom:18px;">
-          <button onClick="{{ setRoleAdmin }}" style="{{ loginRoleSeg.admin }}">
-            <span style="display:flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>Admin</span>
-            <span style="font-size:10.5px;font-weight:400;opacity:.8;">จัดการทั้งหมด</span>
-          </button>
-          <button onClick="{{ setRoleUser }}" style="{{ loginRoleSeg.user }}">
-            <span style="display:flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg>User</span>
-            <span style="font-size:10.5px;font-weight:400;opacity:.8;">ดู &amp; ทำรายการ</span>
-          </button>
-        </div>
-
         <label style="display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:7px;">Username</label>
-        <input name="username" value="{{ loginForm.username }}" onInput="{{ onLoginChange }}" autocomplete="username" placeholder="{{ loginUserPlaceholder }}" style="width:100%;height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;margin-bottom:14px;font-family:'IBM Plex Mono',monospace;" />
+        <input name="username" value="{{ loginForm.username }}" onInput="{{ onLoginChange }}" autocomplete="username" placeholder="ชื่อผู้ใช้งาน" style="width:100%;height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;margin-bottom:14px;font-family:'IBM Plex Mono',monospace;" />
         <label style="display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:7px;">Password</label>
         <input name="password" value="{{ loginForm.password }}" onInput="{{ onLoginChange }}" type="password" autocomplete="current-password" placeholder="••••••••" style="width:100%;height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;margin-bottom:22px;" />
 
@@ -788,7 +776,7 @@
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
           เข้าสู่ระบบ
         </button>
-        <div style="font-size:11.5px;color:var(--faint);text-align:center;margin-top:14px;line-height:1.7;">บัญชีเริ่มต้น · เลือกประเภทด้านบน<br>{{ loginHint }}</div>
+        <div style="font-size:11.5px;color:var(--faint);text-align:center;margin-top:14px;line-height:1.7;">เข้าสู่ระบบด้วยบัญชีในระบบ · บัญชีผู้ดูแลเริ่มต้น<br>somchai / somchai123 — ควรเปลี่ยนรหัสผ่านหลังเข้าใช้ครั้งแรก</div>
       </div>
     </div>
   </sc-if>
@@ -1383,19 +1371,23 @@ class Component extends DCLogic {
 
   onLoginChange(e){ const{name,value}=e.target; this.setState(s=>({loginForm:{...s.loginForm,[name]:value}})); }
   setLoginRole(role){ this.setState(s=>({loginForm:{...s.loginForm,role}})); }
-  loginCreds = {
-    admin:{u:'Admin01',p:'Admin001',name:'สมชาย วงศ์ดี',title:'ผู้ดูแลระบบ'},
-    user:{u:'User01',p:'User001',name:'อารยา ศรีสุข',title:'เจ้าหน้าที่คลัง'},
-  };
   doLogin(){
     const f=this.state.loginForm;
-    const c=this.loginCreds[f.role];
-    if((f.username||'').trim()!==c.u || (f.password||'')!==c.p){
+    const uname=(f.username||'').trim();
+    const pwd=(f.password||'');
+    if(!uname||!pwd){ this.showToast('ข้อมูลไม่ครบ','กรุณากรอก Username และ Password','bad'); return; }
+    // ตรวจสอบกับผู้ใช้งานจริงจากฐานข้อมูล (this.users โหลดมาจาก Supabase ตอนเปิดแอป)
+    const u=this.users.find(x=>(x.username||'').toLowerCase()===uname.toLowerCase());
+    if(!u || this.decode(u.enc)!==pwd){
       this.showToast('เข้าสู่ระบบไม่สำเร็จ','Username หรือ Password ไม่ถูกต้อง','bad');
       return;
     }
-    this.setState({auth:{name:c.name,title:c.title,role:f.role,username:c.u,enc:this.encode(c.p)},route:'dashboard',loginForm:{username:'',password:'',role:f.role}});
-    this.showToast('เข้าสู่ระบบสำเร็จ','ยินดีต้อนรับ '+c.name,'good');
+    if(u.active===false){
+      this.showToast('บัญชีถูกปิดใช้งาน','บัญชีนี้ถูกปิดการใช้งาน กรุณาติดต่อผู้ดูแลระบบ','bad');
+      return;
+    }
+    this.setState({auth:{name:u.name,title:u.title,role:u.role,username:u.username,enc:u.enc},route:'dashboard',loginForm:{username:'',password:'',role:f.role}});
+    this.showToast('เข้าสู่ระบบสำเร็จ','ยินดีต้อนรับ '+u.name,'good');
   }
   logout(){ this.setState({auth:null,profileOpen:false,themeOpen:false,drawer:null,editor:null,locEditor:null,listMgr:null}); }
   openProfile(){ const a=this.state.auth; this.setState({profileOpen:true,themeOpen:false,profilePwVisible:false,profileForm:{name:a.name,title:a.title,role:a.role,username:a.username||'',changingPw:false,oldPw:'',newPw:'',confirmPw:''}}); }
