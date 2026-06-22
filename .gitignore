@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+.env.local
+*.log
+.DS_Store
+src/generated
+
+# installed agent skills (reproducible from skills-lock.json)
+.agents/
+.claude/skills/
+.claude/settings.local.json

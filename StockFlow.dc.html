@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'IBM Plex Sans Thai',system-ui,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+  :root{
+    --accent:#10b981;--accent-2:#0d9466;--accent-3:#34d399;
+    --text:#0d1f17;--dim:#5d6f66;--faint:#8a9a92;
+    --card:rgba(255,255,255,.72);--card-2:rgba(255,255,255,.55);--solid:#ffffff;
+    --border:rgba(13,45,30,.09);--border-2:rgba(13,45,30,.06);
+    --page:#eaf1ed;--page-2:#dfe9e3;
+    --shadow:0 20px 45px -24px rgba(6,45,30,.4);--shadow-sm:0 6px 18px -10px rgba(6,45,30,.3);
+    --good:#10b981;--warn:#f59e0b;--bad:#ef4444;--info:#3b82f6;
+  }
+  [data-theme="ocean"]{--accent:#0ea5b9;--accent-2:#0789a0;--accent-3:#22d3ee}
+  [data-theme="violet"]{--accent:#7c5cfc;--accent-2:#6837f0;--accent-3:#a78bfa}
+  [data-theme="amber"]{--accent:#ea8a0b;--accent-2:#d97309;--accent-3:#fbbf24}
+  [data-theme="rose"]{--accent:#f0407a;--accent-2:#e01563;--accent-3:#fb7185}
+  [data-mode="dark"]{
+    --text:#e9f1ed;--dim:#9db0a7;--faint:#6f827a;
+    --card:rgba(24,33,29,.66);--card-2:rgba(30,40,35,.5);--solid:#131b17;
+    --border:rgba(255,255,255,.08);--border-2:rgba(255,255,255,.05);
+    --page:#0a120d;--page-2:#0e1813;
+    --shadow:0 24px 55px -26px rgba(0,0,0,.7);--shadow-sm:0 8px 22px -12px rgba(0,0,0,.6);
+  }
+  @keyframes floatblob{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-34px) scale(1.12)}}
+  @keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes popin{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+  @keyframes scanline{0%{top:8%}100%{top:90%}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes slideright{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+  @keyframes pulsering{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent)}70%{box-shadow:0 0 0 12px transparent}100%{box-shadow:0 0 0 0 transparent}}
+  /* ===== dashboard entrance / reveal ===== */
+  @keyframes dashRise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  @keyframes dashCountPop{0%{opacity:0;transform:translateY(8px) scale(.92)}60%{opacity:1}100%{opacity:1;transform:none}}
+  @keyframes dashDrawLine{to{stroke-dashoffset:0}}
+  @keyframes dashFadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes dashPopDot{0%{opacity:0;transform:scale(0)}100%{opacity:1;transform:scale(1)}}
+  @keyframes dashGrowBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  @keyframes dashDonut{from{stroke-dashoffset:var(--dash-from)}to{stroke-dashoffset:var(--dash-to)}}
+  @keyframes dashRingGrow{from{transform:rotate(-90deg) scale(.6);opacity:0}to{transform:rotate(-90deg) scale(1);opacity:1}}
+  .dash-card{animation:dashRise .6s cubic-bezier(.2,.85,.25,1) both}
+  .dash-kpi-val{display:inline-block;animation:dashCountPop .7s cubic-bezier(.2,.85,.25,1) both}
+  .dash-bar-fill{transform-origin:left center;animation:dashGrowBar .9s cubic-bezier(.2,.85,.25,1) both}
+  .dash-line{stroke-dasharray:1400;stroke-dashoffset:1400;animation:dashDrawLine 1.4s ease-out .25s forwards}
+  .dash-line-2{opacity:0;animation:dashFadeIn .9s ease-out .8s forwards}
+  .dash-area{opacity:0;animation:dashFadeIn 1s ease-out .55s forwards}
+  .dash-dot{opacity:0;transform-box:fill-box;transform-origin:center;animation:dashPopDot .4s cubic-bezier(.3,1.4,.5,1) both}
+  .dash-donut-seg{animation:dashDonut 1.1s cubic-bezier(.3,.85,.3,1) both}
+  .dash-lowrow{animation:dashRise .5s ease-out both}
+  .dash-ring{animation:dashRingGrow .7s cubic-bezier(.2,.85,.25,1) both}
+  .sf-kpis>.dash-card:nth-child(1){animation-delay:.04s}.sf-kpis>.dash-card:nth-child(2){animation-delay:.12s}.sf-kpis>.dash-card:nth-child(3){animation-delay:.2s}.sf-kpis>.dash-card:nth-child(4){animation-delay:.28s}
+  .sf-kpis>div:nth-child(1) .dash-kpi-val{animation-delay:.3s}.sf-kpis>div:nth-child(2) .dash-kpi-val{animation-delay:.38s}.sf-kpis>div:nth-child(3) .dash-kpi-val{animation-delay:.46s}.sf-kpis>div:nth-child(4) .dash-kpi-val{animation-delay:.54s}
+  .sf-row-a>.dash-card:nth-child(1){animation-delay:.34s}.sf-row-a>.dash-card:nth-child(2){animation-delay:.42s}
+  .sf-row-b>.dash-card:nth-child(1){animation-delay:.5s}.sf-row-b>.dash-card:nth-child(2){animation-delay:.58s}
+  .dash-cat-row:nth-child(1) .dash-bar-fill{animation-delay:.6s}.dash-cat-row:nth-child(2) .dash-bar-fill{animation-delay:.7s}.dash-cat-row:nth-child(3) .dash-bar-fill{animation-delay:.8s}.dash-cat-row:nth-child(4) .dash-bar-fill{animation-delay:.9s}.dash-cat-row:nth-child(5) .dash-bar-fill{animation-delay:1s}.dash-cat-row:nth-child(6) .dash-bar-fill{animation-delay:1.1s}
+  .dash-dot:nth-child(1){animation-delay:.6s}.dash-dot:nth-child(2){animation-delay:.7s}.dash-dot:nth-child(3){animation-delay:.8s}.dash-dot:nth-child(4){animation-delay:.9s}.dash-dot:nth-child(5){animation-delay:1s}.dash-dot:nth-child(6){animation-delay:1.1s}.dash-dot:nth-child(7){animation-delay:1.2s}
+  .dash-lowrow:nth-child(1){animation-delay:.7s}.dash-lowrow:nth-child(2){animation-delay:.78s}.dash-lowrow:nth-child(3){animation-delay:.86s}.dash-lowrow:nth-child(4){animation-delay:.94s}.dash-lowrow:nth-child(5){animation-delay:1.02s}
+  @media (prefers-reduced-motion: reduce){
+    .dash-card,.dash-kpi-val,.dash-bar-fill,.dash-line,.dash-line-2,.dash-area,.dash-dot,.dash-donut-seg,.dash-lowrow{animation:none !important;opacity:1 !important;transform:none !important;stroke-dashoffset:0 !important}
+  }
+  input,select,textarea,button{font-family:inherit}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--accent) 32%,transparent);border-radius:9px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::placeholder{color:var(--faint)}
+  /* ===== responsive ===== */
+  .sf-overlay{display:none}
+  .sf-hamburger{display:none}
+  .sf-kpis{grid-template-columns:repeat(4,1fr)}
+  .sf-row-a{grid-template-columns:1.55fr 1fr}
+  .sf-row-b{grid-template-columns:1fr 1.15fr}
+  .sf-flow{grid-template-columns:1fr 1.1fr}
+  .sf-zones{grid-template-columns:1fr 1fr}
+  .sf-codes{grid-template-columns:300px 1fr}
+  .sf-codes-inner{grid-template-columns:1fr 1fr}
+  .sf-2col{grid-template-columns:1fr 1fr}
+  @media (max-width:1024px){
+    .sf-aside{position:fixed !important;top:0;bottom:0;left:0;height:100vh !important;overflow-y:auto;z-index:60 !important;transform:translateX(-100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);box-shadow:24px 0 60px -30px rgba(0,0,0,.5)}
+    .sf-aside.sf-open{transform:translateX(0) !important}
+    .sf-overlay{display:block}
+    .sf-hamburger{display:inline-flex !important}
+    .sf-kpis{grid-template-columns:repeat(2,1fr)}
+    .sf-row-a,.sf-row-b{grid-template-columns:1fr}
+  }
+  @media (max-width:860px){
+    .sf-flow{grid-template-columns:1fr}
+    .sf-codes{grid-template-columns:1fr}
+  }
+  @media (max-width:720px){
+    .sf-zones{grid-template-columns:1fr}
+  }
+  @media (max-width:640px){
+    .sf-kpis{grid-template-columns:1fr}
+    .sf-codes-inner{grid-template-columns:1fr}
+    .sf-2col{grid-template-columns:1fr}
+    .sf-main{padding:16px 14px 48px !important}
+    .sf-topbar{padding:12px 14px !important;flex-wrap:wrap}
+    .sf-search{width:100% !important;order:3}
+    .sf-pagetitle{font-size:18px !important}
+  }
+  @media (min-width:1025px){ .sf-overlay{display:none !important} }
+</style>
+</helmet>
+
+<template id="__bundler_thumbnail" data-bg-color="#0a5e3e">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#0a5e3e"/>
+    <g transform="translate(600 340)" fill="none" stroke="#ffffff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-150 -90 L0 -165 L150 -90 L0 -15 Z"/>
+      <path d="M-150 -90 L-150 90 L0 165 L150 90 L150 -90"/>
+      <path d="M0 -15 L0 165"/>
+    </g>
+    <text x="600" y="600" font-family="'IBM Plex Sans Thai',sans-serif" font-size="86" font-weight="700" fill="#ffffff" text-anchor="middle">Mee Stock</text>
+    <text x="600" y="670" font-family="'IBM Plex Sans Thai',sans-serif" font-size="38" fill="#a7e8c8" text-anchor="middle">ระบบคลังสินค้า</text>
+  </svg>
+</template>
+
+<div data-theme="{{ themeName }}" data-mode="{{ modeName }}" style="display:flex;min-height:100vh;width:100%;position:relative;overflow:hidden;background:radial-gradient(1000px 640px at 8% -10%, color-mix(in srgb,var(--accent) 20%,transparent), transparent 58%),radial-gradient(900px 560px at 102% 4%, color-mix(in srgb,var(--accent-3) 15%,transparent), transparent 54%),linear-gradient(160deg,var(--page),var(--page-2));">
+
+  <sc-if value="{{ decor }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;width:420px;height:420px;left:-80px;top:30%;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 30%,transparent),transparent 70%);filter:blur(50px);animation:floatblob 16s ease-in-out infinite;pointer-events:none;z-index:0;"></div>
+    <div style="position:absolute;width:360px;height:360px;right:6%;bottom:-60px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent-3) 26%,transparent),transparent 70%);filter:blur(55px);animation:floatblob 20s ease-in-out infinite reverse;pointer-events:none;z-index:0;"></div>
+  </sc-if>
+
+  <!-- SIDEBAR -->
+  <sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}">
+  <div style="display:contents">
+  <sc-if value="{{ navOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeNav }}" class="sf-overlay" style="position:fixed;inset:0;background:rgba(8,18,13,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:55;"></div>
+  </sc-if>
+  <aside class="{{ asideClass }}" style="position:relative;z-index:2;width:248px;flex:none;padding:22px 16px;display:flex;flex-direction:column;gap:6px;border-right:1px solid var(--border);background:var(--card-2);backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3);">
+    <div style="display:flex;align-items:center;gap:12px;padding:6px 10px 20px;">
+      <div style="width:42px;height:42px;border-radius:13px;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -8px var(--accent);flex:none;">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg>
+      </div>
+      <div>
+        <div style="font-size:17px;font-weight:700;letter-spacing:-.3px;line-height:1;">{{ brand }}</div>
+        <div style="font-size:11px;color:var(--faint);margin-top:3px;letter-spacing:.4px;">ระบบคลังสินค้า</div>
+      </div>
+    </div>
+
+    <div style="font-size:10.5px;font-weight:600;color:var(--faint);letter-spacing:1px;padding:4px 12px 6px;">เมนูหลัก</div>
+    <button onClick="{{ go.dashboard }}" style="{{ navStyle.dashboard }}" style-hover="background:color-mix(in srgb,var(--accent) 9%,transparent)">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      <span>แดชบอร์ด</span>
+    </button>
+    <button onClick="{{ go.inbound }}" style="{{ navStyle.inbound }}" style-hover="background:color-mix(in srgb,var(--accent) 9%,transparent)">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+      <span>รับเข้าสินค้า</span>
+    </button>
+    <button onClick="{{ go.outbound }}" style="{{ navStyle.outbound }}" style-hover="background:color-mix(in srgb,var(--accent) 9%,transparent)">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+      <span>จ่ายออกสินค้า</span>
+    </button>
+    <button onClick="{{ go.products }}" style="{{ navStyle.products }}" style-hover="background:color-mix(in srgb,var(--accent) 9%,transparent)">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.3 9 5.2v9l-9 5.2-9-5.2v-9l9-5.2Z" transform="translate(4.5 .5) scale(.78)"/><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16"/><path d="M9 5v14"/></svg>
+      <span>รายการสินค้า</span>
+    </button>
+    <button onClick="{{ go.locations }}" style="{{ navStyle.locations }}" style-hover="background:color-mix(in srgb,var(--accent) 9%,transparent)">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-6h6v6"/><path d="M3 13h18"/></svg>
+      <span>คลัง &amp; พื้นที่</span>
+    </button>
+    <button onClick="{{ go.codes }}" style="{{ navStyle.codes }}" style-hover="background:color-mix(in srgb,var(--accent) 9%,transparent)">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14M7 5v14M11 5v14M14 5v14M18 5v14M21 5v14" stroke-width="1.5"/></svg>
+      <span>Barcode / QR</span>
+    </button>
+
+    <div style="font-size:10.5px;font-weight:600;color:var(--faint);letter-spacing:1px;padding:16px 12px 6px;">รายงาน</div>
+    <button onClick="{{ go.stockReport }}" style="{{ navStyle.stockReport }}" style-hover="background:color-mix(in srgb,var(--accent) 9%,transparent)">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z" stroke-width="1.6"/><path d="M8 4v16M4 9h16M4 14h16"/></svg>
+      <span>รายงานคงเหลือ</span>
+    </button>
+    <button onClick="{{ go.moveReport }}" style="{{ navStyle.moveReport }}" style-hover="background:color-mix(in srgb,var(--accent) 9%,transparent)">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M16 7h5v5"/></svg>
+      <span>รายงานเคลื่อนไหว</span>
+    </button>
+
+    <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+    <div style="font-size:10.5px;font-weight:600;color:var(--faint);letter-spacing:1px;padding:16px 12px 6px;">ระบบ</div>
+    <button onClick="{{ go.userMgmt }}" style="{{ navStyle.userMgmt }}" style-hover="background:color-mix(in srgb,var(--accent) 9%,transparent)">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>จัดการผู้ใช้งาน</span>
+    </button>
+    </sc-if>
+
+    <div style="margin-top:auto;border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:6px;">
+      <button onClick="{{ openProfile }}" style="display:flex;align-items:center;gap:11px;padding:8px 12px;border-radius:12px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;text-align:left;width:100%;" style-hover="border-color:var(--accent)">
+        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,var(--accent-3),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex:none;">{{ userInitial }}</div>
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ userName }}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:1px;">
+            <span style="font-size:10px;font-weight:700;color:var(--accent);background:color-mix(in srgb,var(--accent) 13%,transparent);padding:1px 6px;border-radius:5px;letter-spacing:.3px;">{{ roleLabel }}</span>
+            <span style="font-size:11px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ userTitle }}</span>
+          </div>
+        </div>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      </button>
+
+      <div style="display:flex;gap:8px;">
+        <button onClick="{{ logout }}" title="ออกจากระบบ" aria-label="ออกจากระบบ" style="flex:none;width:46px;display:flex;align-items:center;justify-content:center;padding:10px;border-radius:12px;border:1px solid color-mix(in srgb,#ef4444 35%,transparent);background:color-mix(in srgb,#ef4444 8%,transparent);cursor:pointer;color:#ef4444;" style-hover="background:color-mix(in srgb,#ef4444 14%,transparent)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+        </button>
+        <div style="position:relative;flex:1;">
+          <button onClick="{{ toggleThemeOpen }}" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 10px;border-radius:12px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;color:var(--text);font-size:13px;font-weight:600;" style-hover="border-color:var(--accent)">
+            <span style="width:18px;height:18px;border-radius:50%;background:conic-gradient(from 0deg,var(--accent),var(--accent-3),var(--accent-2),var(--accent));display:block;flex:none;"></span>
+            <span>ธีม</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <sc-if value="{{ themeOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;right:0;bottom:calc(100% + 8px);width:216px;padding:16px;border-radius:18px;background:var(--solid);border:1px solid var(--border);box-shadow:var(--shadow);z-index:30;animation:popin .16s ease;">
+              <div style="font-size:12px;font-weight:600;color:var(--dim);margin-bottom:11px;">โทนสีของระบบ</div>
+              <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:16px;">
+                <sc-for list="{{ themeBtns }}" as="t" hint-placeholder-count="5">
+                  <button onClick="{{ t.on }}" title="{{ t.name }}" style="{{ t.style }}">
+                    <sc-if value="{{ t.active }}" hint-placeholder-val="{{ false }}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
+                    </sc-if>
+                  </button>
+                </sc-for>
+              </div>
+              <button onClick="{{ toggleMode }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:12px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;color:var(--text);font-size:13.5px;font-weight:600;">
+                <span style="display:flex;align-items:center;gap:9px;">{{ modeIcon }} {{ modeLabel }}</span>
+                <span style="width:40px;height:23px;border-radius:20px;background:{{ modeTrackBg }};position:relative;transition:.2s;flex:none;">
+                  <span style="position:absolute;top:2px;left:{{ modeKnobX }};width:19px;height:19px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 2px 5px rgba(0,0,0,.3);"></span>
+                </span>
+              </button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;">
+
+    <!-- TOPBAR -->
+    <header class="sf-topbar" style="flex:none;display:flex;align-items:center;gap:16px;padding:16px 28px;border-bottom:1px solid var(--border);background:var(--card-2);backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3);">
+      <button onClick="{{ toggleNav }}" aria-label="เปิด/ปิดเมนู" class="sf-hamburger" style="width:42px;height:42px;border-radius:12px;border:1px solid var(--border);background:var(--solid);cursor:pointer;align-items:center;justify-content:center;color:var(--text);flex:none;box-shadow:var(--shadow-sm);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div style="min-width:0;">
+        <h1 class="sf-pagetitle" style="margin:0;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.1;">{{ pageTitle }}</h1>
+        <div style="font-size:12.5px;color:var(--dim);margin-top:3px;">{{ pageSub }}</div>
+      </div>
+      <div style="flex:1;"></div>
+
+      <div class="sf-search" style="position:relative;display:flex;align-items:center;background:var(--solid);border:1px solid var(--border);border-radius:12px;padding:0 12px;height:42px;width:260px;box-shadow:var(--shadow-sm);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+        <input value="{{ q }}" onInput="{{ onSearch }}" placeholder="ค้นหาสินค้า, SKU, รายการ..." style="border:none;outline:none;background:transparent;color:var(--text);font-size:13.5px;width:100%;margin-left:9px;" />
+      </div>
+
+      <button onClick="{{ openScan }}" style="height:42px;display:flex;align-items:center;gap:8px;padding:0 15px;border-radius:12px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:var(--shadow-sm);" style-hover="border-color:var(--accent)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M3 12h18"/></svg>
+        สแกน
+      </button>
+
+    </header>
+
+    <!-- CONTENT -->
+    <main class="sf-main" style="flex:1;overflow-y:auto;overflow-x:hidden;padding:26px 28px 60px;">
+
+      <!-- ============ DASHBOARD ============ -->
+      <sc-if value="{{ r.dashboard }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div class="sf-kpis" style="display:grid;gap:16px;">
+            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+              <div class="dash-card" style="position:relative;overflow:hidden;padding:18px 20px;border-radius:18px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <span style="font-size:12.5px;color:var(--dim);font-weight:500;">{{ k.label }}</span>
+                  <span style="width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:{{ k.iconBg }};color:{{ k.iconColor }};">{{ k.icon }}</span>
+                </div>
+                <div style="font-size:28px;font-weight:700;letter-spacing:-.6px;margin-top:12px;line-height:1;"><span class="dash-kpi-val">{{ k.value }}</span></div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:9px;font-size:12px;">
+                  <span style="color:{{ k.deltaColor }};font-weight:600;">{{ k.delta }}</span>
+                  <span style="color:var(--faint);">{{ k.sub }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div class="sf-row-a" style="display:grid;gap:16px;">
+            <!-- trend area chart -->
+            <div class="dash-card" style="padding:20px 22px;border-radius:18px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <div>
+                  <div style="font-size:15px;font-weight:700;">การเคลื่อนไหว 7 วันล่าสุด</div>
+                  <div style="font-size:12px;color:var(--dim);margin-top:2px;">เปรียบเทียบรับเข้า vs จ่ายออก (หน่วย)</div>
+                </div>
+                <div style="display:flex;gap:14px;">
+                  <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);"><span style="width:11px;height:11px;border-radius:3px;background:var(--accent);"></span>รับเข้า</span>
+                  <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);"><span style="width:11px;height:11px;border-radius:3px;background:#ef4444;"></span>จ่ายออก</span>
+                </div>
+              </div>
+              <svg viewBox="0 0 560 200" style="width:100%;height:210px;display:block;overflow:visible;">
+                <defs>
+                  <linearGradient id="areaIn" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--accent)" stop-opacity="0.34"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></linearGradient>
+                </defs>
+                <path class="dash-area" d="{{ trendArea }}" fill="url(#areaIn)"></path>
+                <polyline class="dash-line" points="{{ trendIn }}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                <polyline class="dash-line-2" points="{{ trendOut }}" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 6"></polyline>
+                <sc-for list="{{ trendDays }}" as="d" hint-placeholder-count="7">
+                  <text x="{{ d.x }}" y="196" fill="var(--faint)" font-size="11" text-anchor="middle">{{ d.label }}</text>
+                </sc-for>
+                <sc-for list="{{ trendDots }}" as="p" hint-placeholder-count="7">
+                  <circle class="dash-dot" cx="{{ p.x }}" cy="{{ p.y }}" r="3.5" fill="var(--solid)" stroke="var(--accent)" stroke-width="2.5"></circle>
+                </sc-for>
+              </svg>
+            </div>
+
+            <!-- donut by zone -->
+            <div class="dash-card" style="padding:20px 22px;border-radius:18px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);">
+              <div style="font-size:15px;font-weight:700;margin-bottom:2px;">สัดส่วนสต๊อกตาม Location</div>
+              <div style="font-size:12px;color:var(--dim);margin-bottom:8px;">กระจายตามโซนคลัง</div>
+              <div style="display:flex;align-items:center;gap:18px;">
+                <div style="position:relative;flex:none;">
+                  <svg class="dash-ring" viewBox="0 0 120 120" style="width:128px;height:128px;transform:rotate(-90deg);">
+                    <circle cx="60" cy="60" r="42" fill="none" stroke="var(--border)" stroke-width="15"></circle>
+                    <sc-for list="{{ donutSegs }}" as="s" hint-placeholder-count="4">
+                      <circle cx="60" cy="60" r="42" fill="none" stroke="{{ s.color }}" stroke-width="15" stroke-dasharray="{{ s.dash }}" stroke-dashoffset="{{ s.offset }}" stroke-linecap="round"></circle>
+                    </sc-for>
+                  </svg>
+                  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                    <div style="font-size:21px;font-weight:700;line-height:1;">{{ donutTotal }}</div>
+                    <div style="font-size:10.5px;color:var(--faint);">หน่วยรวม</div>
+                  </div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:9px;">
+                  <sc-for list="{{ donutSegs }}" as="s" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span style="width:10px;height:10px;border-radius:3px;background:{{ s.color }};flex:none;"></span>
+                      <span style="font-size:12px;color:var(--dim);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ s.name }}</span>
+                      <span style="font-size:12px;font-weight:600;">{{ s.pct }}%</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sf-row-b" style="display:grid;gap:16px;">
+            <!-- category bars -->
+            <div class="dash-card" style="padding:20px 22px;border-radius:18px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);">
+              <div style="font-size:15px;font-weight:700;margin-bottom:16px;">สต๊อกตามหมวดหมู่</div>
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <sc-for list="{{ catChart }}" as="c" hint-placeholder-count="5">
+                  <div class="dash-cat-row">
+                    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px;"><span style="color:var(--dim);">{{ c.cat }}</span><span style="font-weight:600;">{{ c.qty }}</span></div>
+                    <div style="height:9px;border-radius:6px;background:var(--border-2);overflow:hidden;"><div class="dash-bar-fill" style="{{ c.barStyle }}"></div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- low stock alerts -->
+            <div class="dash-card" style="padding:20px 22px;border-radius:18px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <div style="font-size:15px;font-weight:700;">แจ้งเตือนสินค้าใกล้หมด</div>
+                <span style="font-size:11.5px;font-weight:600;color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent);padding:4px 10px;border-radius:20px;">{{ lowCount }} รายการ</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:11px;max-height:230px;overflow-y:auto;">
+                <sc-for list="{{ lowStock }}" as="l" hint-placeholder-count="4">
+                  <div class="dash-lowrow" style="display:flex;align-items:center;gap:12px;padding:11px;border-radius:13px;background:var(--card-2);border:1px solid var(--border-2);">
+                    <span style="width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:{{ l.badgeBg }};color:{{ l.badgeColor }};flex:none;">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+                    </span>
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ l.name }}</div>
+                      <div style="font-size:11.5px;color:var(--faint);margin-top:2px;">เหลือ {{ l.qty }} / ขั้นต่ำ {{ l.min }} {{ l.unit }}</div>
+                    </div>
+                    <span style="font-size:11px;font-weight:600;color:{{ l.badgeColor }};">{{ l.statusText }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ INBOUND / OUTBOUND ============ -->
+      <sc-if value="{{ r.flow }}" hint-placeholder-val="{{ false }}">
+        <div class="sf-flow" style="display:grid;gap:20px;align-items:start;">
+          <!-- form -->
+          <div style="padding:24px;border-radius:20px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);">
+            <div style="display:flex;align-items:center;gap:13px;margin-bottom:22px;">
+              <span style="width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:{{ flowIconBg }};color:{{ flowIconColor }};">{{ flowIcon }}</span>
+              <div>
+                <div style="font-size:17px;font-weight:700;">{{ flowFormTitle }}</div>
+                <div style="font-size:12.5px;color:var(--dim);margin-top:2px;">{{ flowFormSub }}</div>
+              </div>
+            </div>
+
+            <label style="display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:7px;">สินค้า (SKU)</label>
+            <div style="display:flex;gap:9px;margin-bottom:16px;">
+              <select name="sku" value="{{ form.sku }}" onChange="{{ onFormChange }}" style="flex:1;height:46px;padding:0 13px;border-radius:12px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;cursor:pointer;">
+                <option value="">— เลือกสินค้า —</option>
+                <sc-for list="{{ productOptions }}" as="o" hint-placeholder-count="5"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+              </select>
+              <button onClick="{{ openScan }}" style="width:46px;height:46px;border-radius:12px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--accent);" style-hover="border-color:var(--accent)" title="สแกนบาร์โค้ด">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M3 12h18"/></svg>
+              </button>
+            </div>
+
+            <div class="sf-2col" style="display:grid;gap:13px;margin-bottom:16px;">
+              <div>
+                <label style="display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:7px;">{{ flowLocLabel }}</label>
+                <select name="zone" value="{{ form.zone }}" onChange="{{ onFormChange }}" style="width:100%;height:46px;padding:0 13px;border-radius:12px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;cursor:pointer;">
+                  <option value="">— เลือกโซน —</option>
+                  <sc-for list="{{ zoneOptions }}" as="z" hint-placeholder-count="4"><option value="{{ z.value }}">{{ z.label }}</option></sc-for>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:7px;">จำนวน</label>
+                <input name="qty" value="{{ form.qty }}" onInput="{{ onFormChange }}" type="number" min="1" placeholder="0" style="width:100%;height:46px;padding:0 13px;border-radius:12px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:15px;font-weight:600;" />
+              </div>
+            </div>
+
+            <sc-if value="{{ form.zone }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:12px;background:color-mix(in srgb,var(--accent) 9%,transparent);margin-bottom:16px;font-size:12.5px;color:var(--dim);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>
+                คงเหลือปัจจุบันในโซนนี้: <strong style="color:var(--text);">{{ availForm }}</strong> {{ flowUnit }}
+              </div>
+            </sc-if>
+
+            <label style="display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:7px;">เลขที่อ้างอิง (เอกสาร / Lot)</label>
+            <input name="ref" value="{{ form.ref }}" onInput="{{ onFormChange }}" placeholder="{{ flowRefPlaceholder }}" style="width:100%;height:46px;padding:0 13px;border-radius:12px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;margin-bottom:22px;" />
+
+            <button onClick="{{ submitFlow }}" style="width:100%;height:50px;border-radius:13px;border:none;cursor:pointer;font-size:15px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 12px 26px -12px var(--accent);display:flex;align-items:center;justify-content:center;gap:9px;" style-hover="filter:brightness(1.06)">
+              {{ flowIcon }} {{ flowBtnLabel }}
+            </button>
+          </div>
+
+          <!-- recent flow list -->
+          <div style="padding:22px 24px;border-radius:20px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px;">{{ flowRecentTitle }}</div>
+            <div style="font-size:12.5px;color:var(--dim);margin-bottom:16px;">รายการล่าสุดของวันนี้และก่อนหน้า</div>
+            <div style="display:flex;flex-direction:column;gap:10px;max-height:540px;overflow-y:auto;">
+              <sc-for list="{{ flowRecent }}" as="m" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:13px;padding:13px;border-radius:14px;background:var(--card-2);border:1px solid var(--border-2);">
+                  <span style="width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:{{ m.iconBg }};color:{{ m.color }};flex:none;font-weight:700;font-size:17px;">{{ m.sign }}</span>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ m.name }}</div>
+                    <div style="font-size:11.5px;color:var(--faint);margin-top:2px;">{{ m.zoneText }} · {{ m.ref }} · {{ m.time }}</div>
+                  </div>
+                  <div style="text-align:right;flex:none;">
+                    <div style="font-size:15px;font-weight:700;color:{{ m.color }};">{{ m.sign }}{{ m.qtyText }}</div>
+                    <div style="font-size:11px;color:var(--faint);">{{ m.unit }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ PRODUCTS ============ -->
+      <sc-if value="{{ r.products }}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius:20px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);gap:12px;">
+            <div>
+              <div style="font-size:15px;font-weight:700;">รายการสินค้าทั้งหมด <span style="color:var(--faint);font-weight:500;">({{ prodCount }})</span></div>
+              <div style="font-size:12px;color:var(--dim);margin-top:2px;">คลิกแถวเพื่อดูรายละเอียด · กดไอคอนดินสอเพื่อแก้ไข</div>
+            </div>
+            <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;gap:9px;flex:none;">
+              <button onClick="{{ openCatMgr }}" style="height:42px;display:flex;align-items:center;gap:7px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:var(--card-2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;" style-hover="border-color:var(--accent)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+                หมวดหมู่
+              </button>
+              <button onClick="{{ openUnitMgr }}" style="height:42px;display:flex;align-items:center;gap:7px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:var(--card-2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;" style-hover="border-color:var(--accent)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3z"/><path d="M9 6v12M15 6v12"/></svg>
+                หน่วยนับ
+              </button>
+              <button onClick="{{ openAddProduct }}" style="height:42px;display:flex;align-items:center;gap:8px;padding:0 18px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 10px 22px -12px var(--accent);" style-hover="filter:brightness(1.06)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                เพิ่มสินค้า
+              </button>
+            </div>
+            </sc-if>
+          </div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:680px;">
+              <thead><tr style="text-align:left;color:var(--dim);font-size:12px;">
+                <th style="padding:13px 22px;font-weight:600;">SKU</th>
+                <th style="padding:13px 12px;font-weight:600;">ชื่อสินค้า</th>
+                <th style="padding:13px 12px;font-weight:600;">หมวดหมู่</th>
+                <th style="padding:13px 12px;font-weight:600;text-align:right;">คงเหลือ</th>
+                <th style="padding:13px 12px;font-weight:600;text-align:right;">มูลค่า</th>
+                <th style="padding:13px 12px;font-weight:600;text-align:center;">สถานะ</th>
+                <th style="padding:13px 22px;font-weight:600;text-align:center;">จัดการ</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ prodRows }}" as="p" hint-placeholder-count="8">
+                  <tr onClick="{{ p.open }}" style="border-top:1px solid var(--border-2);cursor:pointer;" style-hover="background:color-mix(in srgb,var(--accent) 5%,transparent)">
+                    <td style="padding:13px 22px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--accent);font-weight:600;">{{ p.sku }}</td>
+                    <td style="padding:13px 12px;font-weight:600;">{{ p.name }}</td>
+                    <td style="padding:13px 12px;color:var(--dim);">{{ p.cat }}</td>
+                    <td style="padding:13px 12px;text-align:right;font-weight:700;">{{ p.totalText }} <span style="color:var(--faint);font-weight:400;font-size:12px;">{{ p.unit }}</span></td>
+                    <td style="padding:13px 12px;text-align:right;color:var(--dim);">{{ p.valueText }}</td>
+                    <td style="padding:13px 12px;text-align:center;"><span style="font-size:11.5px;font-weight:600;color:{{ p.sc }};background:{{ p.sbg }};padding:4px 11px;border-radius:20px;white-space:nowrap;">{{ p.st }}</span></td>
+                    <td style="padding:13px 22px;text-align:center;"><sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}"><button onClick="{{ p.edit }}" title="แก้ไข" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--accent);" style-hover="border-color:var(--accent)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></sc-if><sc-if value="{{ notAdmin }}" hint-placeholder-val="{{ false }}"><span style="color:var(--faint);">—</span></sc-if></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ LOCATIONS ============ -->
+      <sc-if value="{{ r.locations }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:22px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-radius:16px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);">
+            <div style="font-size:13.5px;color:var(--dim);">โครงสร้างคลัง: <strong style="color:var(--text);">คลังสินค้า → โซน</strong> · เพิ่ม/แก้ไขได้ตามต้องการ</div>
+            <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ openAddWh }}" style="height:42px;display:flex;align-items:center;gap:8px;padding:0 18px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 10px 22px -12px var(--accent);flex:none;" style-hover="filter:brightness(1.06)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              เพิ่มคลังสินค้า
+            </button>
+            </sc-if>
+          </div>
+          <sc-for list="{{ warehouses }}" as="w" hint-placeholder-count="2">
+            <div>
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px;">
+                <span style="width:40px;height:40px;border-radius:12px;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#fff;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-7h6v7"/></svg>
+                </span>
+                <div>
+                  <div style="font-size:16px;font-weight:700;">{{ w.wh }}</div>
+                  <div style="font-size:12px;color:var(--dim);">{{ w.totalText }} หน่วยใน {{ w.zoneCount }} โซน</div>
+                </div>
+                <div style="flex:1;"></div>
+                <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ w.onEdit }}" title="แก้ไขคลัง" style="width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);" style-hover="border-color:var(--accent)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                <button onClick="{{ w.onAddZone }}" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 14px;border-radius:10px;border:1px solid var(--border);background:var(--card-2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;" style-hover="border-color:var(--accent)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>เพิ่มโซน</button>
+                </sc-if>
+              </div>
+              <div class="sf-zones" style="display:grid;gap:16px;">
+                <sc-for list="{{ w.zones }}" as="z" hint-placeholder-count="2">
+                  <div style="padding:20px;border-radius:18px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
+                      <div style="font-size:14.5px;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ z.name }}</div>
+                      <div style="display:flex;align-items:center;gap:7px;flex:none;">
+                        <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--accent);background:color-mix(in srgb,var(--accent) 11%,transparent);padding:3px 9px;border-radius:7px;">{{ z.code }}</span>
+                        <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}"><button onClick="{{ z.onEdit }}" title="แก้ไขโซน" style="width:26px;height:26px;border-radius:7px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);" style-hover="border-color:var(--accent)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></sc-if>
+                      </div>
+                    </div>
+                    <div style="font-size:12px;color:var(--dim);margin-bottom:12px;">{{ z.itemCount }} ชนิดสินค้า</div>
+                    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;"><span style="color:var(--dim);">ความจุที่ใช้</span><span style="font-weight:600;">{{ z.totalText }} / {{ z.cap }}</span></div>
+                    <div style="height:8px;border-radius:6px;background:var(--border-2);overflow:hidden;margin-bottom:14px;"><div style="{{ z.barStyle }}"></div></div>
+                    <div style="display:flex;flex-direction:column;gap:7px;max-height:160px;overflow-y:auto;">
+                      <sc-for list="{{ z.items }}" as="it" hint-placeholder-count="3">
+                        <div style="display:flex;align-items:center;justify-content:space-between;font-size:12.5px;padding:7px 11px;border-radius:9px;background:var(--card-2);">
+                          <span style="color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">{{ it.name }}</span>
+                          <span style="font-weight:600;color:var(--accent);flex:none;margin-left:8px;">{{ it.qty }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ============ STOCK REPORT ============ -->
+      <sc-if value="{{ r.stockReport }}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius:20px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);">
+            <div>
+              <div style="font-size:15px;font-weight:700;">รายงานสินค้าคงเหลือแยกตาม Location</div>
+              <div style="font-size:12px;color:var(--dim);margin-top:2px;">มูลค่ารวม {{ totalValueText }} · {{ totalQtyText }} หน่วย</div>
+            </div>
+            <button onClick="{{ exportToast }}" style="height:38px;display:flex;align-items:center;gap:7px;padding:0 14px;border-radius:10px;border:1px solid var(--border);background:var(--card-2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;" style-hover="border-color:var(--accent)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg>
+              ส่งออก
+            </button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:820px;">
+              <thead><tr style="text-align:left;color:var(--dim);font-size:11.5px;">
+                <th style="padding:12px 22px;font-weight:600;">สินค้า</th>
+                <sc-for list="{{ zoneHeads }}" as="h" hint-placeholder-count="4"><th style="padding:12px 8px;font-weight:600;text-align:right;">{{ h.label }}</th></sc-for>
+                <th style="padding:12px 12px;font-weight:600;text-align:right;">รวม</th>
+                <th style="padding:12px 22px;font-weight:600;text-align:center;">สถานะ</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ repRows }}" as="r" hint-placeholder-count="8">
+                  <tr style="border-top:1px solid var(--border-2);" style-hover="background:color-mix(in srgb,var(--accent) 5%,transparent)">
+                    <td style="padding:12px 22px;"><div style="font-weight:600;">{{ r.name }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--faint);margin-top:1px;">{{ r.sku }}</div></td>
+                    <td style="padding:12px 8px;text-align:right;color:var(--dim);">{{ r.z1 }}</td>
+                    <td style="padding:12px 8px;text-align:right;color:var(--dim);">{{ r.z2 }}</td>
+                    <td style="padding:12px 8px;text-align:right;color:var(--dim);">{{ r.z3 }}</td>
+                    <td style="padding:12px 8px;text-align:right;color:var(--dim);">{{ r.z4 }}</td>
+                    <td style="padding:12px 12px;text-align:right;font-weight:700;">{{ r.totalText }}</td>
+                    <td style="padding:12px 22px;text-align:center;"><span style="font-size:11px;font-weight:600;color:{{ r.sc }};background:{{ r.sbg }};padding:4px 10px;border-radius:20px;white-space:nowrap;">{{ r.st }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ MOVEMENT REPORT ============ -->
+      <sc-if value="{{ r.moveReport }}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius:20px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px;">
+            <div style="font-size:15px;font-weight:700;">รายงานการเคลื่อนไหวสต๊อก</div>
+            <div style="display:flex;gap:8px;">
+              <sc-for list="{{ moveFilters }}" as="f" hint-placeholder-count="3">
+                <button onClick="{{ f.on }}" style="{{ f.style }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:760px;">
+              <thead><tr style="text-align:left;color:var(--dim);font-size:11.5px;">
+                <th style="padding:12px 22px;font-weight:600;">วันที่ / เวลา</th>
+                <th style="padding:12px 12px;font-weight:600;">ประเภท</th>
+                <th style="padding:12px 12px;font-weight:600;">สินค้า</th>
+                <th style="padding:12px 12px;font-weight:600;">Location</th>
+                <th style="padding:12px 12px;font-weight:600;">อ้างอิง</th>
+                <th style="padding:12px 12px;font-weight:600;text-align:right;">จำนวน</th>
+                <th style="padding:12px 22px;font-weight:600;">ผู้ทำรายการ</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ moveRows }}" as="m" hint-placeholder-count="10">
+                  <tr style="border-top:1px solid var(--border-2);" style-hover="background:color-mix(in srgb,var(--accent) 5%,transparent)">
+                    <td style="padding:12px 22px;color:var(--dim);white-space:nowrap;"><span style="font-weight:600;color:var(--text);">{{ m.ts }}</span> {{ m.time }}</td>
+                    <td style="padding:12px 12px;"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:{{ m.color }};background:{{ m.iconBg }};padding:4px 10px;border-radius:20px;">{{ m.typeLabel }}</span></td>
+                    <td style="padding:12px 12px;font-weight:600;">{{ m.name }}</td>
+                    <td style="padding:12px 12px;color:var(--dim);">{{ m.zoneText }}</td>
+                    <td style="padding:12px 12px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--faint);">{{ m.ref }}</td>
+                    <td style="padding:12px 12px;text-align:right;font-weight:700;color:{{ m.color }};">{{ m.sign }}{{ m.qtyText }}</td>
+                    <td style="padding:12px 22px;color:var(--dim);">{{ m.user }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ BARCODE / QR ============ -->
+      <sc-if value="{{ r.codes }}" hint-placeholder-val="{{ false }}">
+        <div class="sf-codes" style="display:grid;gap:20px;align-items:start;">
+          <div style="padding:20px;border-radius:20px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);">
+            <div style="font-size:14.5px;font-weight:700;margin-bottom:14px;">เลือกสินค้า</div>
+            <div style="display:flex;flex-direction:column;gap:8px;max-height:520px;overflow-y:auto;">
+              <sc-for list="{{ codeList }}" as="c" hint-placeholder-count="8">
+                <button onClick="{{ c.on }}" style="{{ c.style }}">
+                  <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.name }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;opacity:.7;margin-top:2px;">{{ c.sku }}</div>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding:30px;border-radius:20px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+              <div>
+                <div style="font-size:18px;font-weight:700;">{{ codeProduct.name }}</div>
+                <div style="font-size:13px;color:var(--dim);margin-top:3px;">{{ codeProduct.cat }} · คงเหลือ {{ codeProduct.total }} {{ codeProduct.unit }}</div>
+              </div>
+              <button onClick="{{ openScan }}" style="height:42px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 10px 22px -12px var(--accent);" style-hover="filter:brightness(1.06)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M3 12h18"/></svg>
+                สแกนเพื่อค้นหา
+              </button>
+            </div>
+
+            <div class="sf-codes-inner" style="display:grid;gap:20px;">
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px;border-radius:16px;background:#fff;border:1px solid var(--border);">
+                <div style="font-size:12px;font-weight:600;color:#64748b;margin-bottom:16px;align-self:flex-start;">BARCODE (CODE 128)</div>
+                <svg id="sf-barcode" style="max-width:100%;"></svg>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px;border-radius:16px;background:#fff;border:1px solid var(--border);">
+                <div style="font-size:12px;font-weight:600;color:#64748b;margin-bottom:16px;align-self:flex-start;">QR CODE</div>
+                <div id="sf-qr" style="display:flex;align-items:center;justify-content:center;"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:20px;">
+              <button onClick="{{ printToast }}" style="flex:1;height:44px;border-radius:12px;border:1px solid var(--border);background:var(--card-2);color:var(--text);font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;" style-hover="border-color:var(--accent)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                พิมพ์ฉลาก
+              </button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ USER MANAGEMENT ============ -->
+      <sc-if value="{{ r.userMgmt }}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius:20px;background:var(--card);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);gap:12px;">
+            <div>
+              <div style="font-size:15px;font-weight:700;">ผู้ใช้งานระบบ</div>
+              <div style="font-size:12px;color:var(--dim);margin-top:2px;">กำหนดสิทธิ์ Admin / User และสถานะการใช้งาน</div>
+            </div>
+            <button onClick="{{ openAddUser }}" style="height:42px;display:flex;align-items:center;gap:8px;padding:0 18px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 10px 22px -12px var(--accent);flex:none;" style-hover="filter:brightness(1.06)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              เพิ่มผู้ใช้งาน
+            </button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px;">
+              <thead><tr style="text-align:left;color:var(--dim);font-size:12px;">
+                <th style="padding:13px 22px;font-weight:600;">ผู้ใช้งาน</th>
+                <th style="padding:13px 12px;font-weight:600;">Username</th>
+                <th style="padding:13px 12px;font-weight:600;">ตำแหน่ง</th>
+                <th style="padding:13px 12px;font-weight:600;text-align:center;">สิทธิ์</th>
+                <th style="padding:13px 12px;font-weight:600;text-align:center;">สถานะ</th>
+                <th style="padding:13px 22px;font-weight:600;text-align:center;">จัดการ</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ userRows }}" as="u" hint-placeholder-count="4">
+                  <tr style="border-top:1px solid var(--border-2);" style-hover="background:color-mix(in srgb,var(--accent) 5%,transparent)">
+                    <td style="padding:13px 22px;">
+                      <div style="display:flex;align-items:center;gap:11px;">
+                        <span style="width:36px;height:36px;border-radius:50%;background:{{ u.avatarBg }};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;flex:none;">{{ u.initial }}</span>
+                        <span style="font-weight:600;">{{ u.name }}</span>
+                      </div>
+                    </td>
+                    <td style="padding:13px 12px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--dim);">{{ u.username }}</td>
+                    <td style="padding:13px 12px;color:var(--dim);">{{ u.title }}</td>
+                    <td style="padding:13px 12px;text-align:center;"><span style="font-size:11.5px;font-weight:600;color:{{ u.roleColor }};background:{{ u.roleBg }};padding:4px 12px;border-radius:20px;">{{ u.roleLabel }}</span></td>
+                    <td style="padding:13px 12px;text-align:center;"><span style="font-size:11.5px;font-weight:600;color:{{ u.statusColor }};background:{{ u.statusBg }};padding:4px 12px;border-radius:20px;white-space:nowrap;">{{ u.statusText }}</span></td>
+                    <td style="padding:13px 22px;text-align:center;"><div style="display:inline-flex;align-items:center;gap:7px;"><button onClick="{{ u.edit }}" title="แก้ไข" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--accent);" style-hover="border-color:var(--accent)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button onClick="{{ u.del }}" title="ลบ" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#ef4444;" style-hover="border-color:#ef4444"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </sc-if>
+
+    </main>
+  </div>
+  </div>
+  </sc-if>
+
+  <!-- LOGIN SCREEN -->
+  <sc-if value="{{ notLoggedIn }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;position:relative;z-index:2;">
+      <div style="width:420px;max-width:100%;padding:36px 34px;border-radius:24px;background:var(--card);backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3);border:1px solid var(--border);box-shadow:var(--shadow);animation:popin .3s ease;">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:26px;">
+          <div style="width:60px;height:60px;border-radius:18px;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px -10px var(--accent);margin-bottom:16px;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg>
+          </div>
+          <div style="font-size:24px;font-weight:700;letter-spacing:-.5px;">{{ brand }}</div>
+          <div style="font-size:13px;color:var(--dim);margin-top:5px;">ระบบบริหารคลังสินค้า · เข้าสู่ระบบเพื่อใช้งาน</div>
+        </div>
+
+        <label style="display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:9px;">ประเภทผู้ใช้งาน</label>
+        <div style="display:flex;gap:10px;margin-bottom:18px;">
+          <button onClick="{{ setRoleAdmin }}" style="{{ loginRoleSeg.admin }}">
+            <span style="display:flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>Admin</span>
+            <span style="font-size:10.5px;font-weight:400;opacity:.8;">จัดการทั้งหมด</span>
+          </button>
+          <button onClick="{{ setRoleUser }}" style="{{ loginRoleSeg.user }}">
+            <span style="display:flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg>User</span>
+            <span style="font-size:10.5px;font-weight:400;opacity:.8;">ดู &amp; ทำรายการ</span>
+          </button>
+        </div>
+
+        <label style="display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:7px;">Username</label>
+        <input name="username" value="{{ loginForm.username }}" onInput="{{ onLoginChange }}" autocomplete="username" placeholder="{{ loginUserPlaceholder }}" style="width:100%;height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;margin-bottom:14px;font-family:'IBM Plex Mono',monospace;" />
+        <label style="display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:7px;">Password</label>
+        <input name="password" value="{{ loginForm.password }}" onInput="{{ onLoginChange }}" type="password" autocomplete="current-password" placeholder="••••••••" style="width:100%;height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;margin-bottom:22px;" />
+
+        <button onClick="{{ doLogin }}" style="width:100%;height:50px;border-radius:13px;border:none;cursor:pointer;font-size:15px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 12px 26px -12px var(--accent);display:flex;align-items:center;justify-content:center;gap:9px;" style-hover="filter:brightness(1.06)">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+          เข้าสู่ระบบ
+        </button>
+        <div style="font-size:11.5px;color:var(--faint);text-align:center;margin-top:14px;line-height:1.7;">บัญชีเริ่มต้น · เลือกประเภทด้านบน<br>{{ loginHint }}</div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ drawer.open }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;background:rgba(8,18,13,.42);backdrop-filter:blur(3px);z-index:40;animation:popin .2s ease;"></div>
+    <div style="position:fixed;top:0;right:0;height:100vh;width:420px;max-width:92vw;z-index:41;background:var(--solid);border-left:1px solid var(--border);box-shadow:-30px 0 60px -30px rgba(0,0,0,.4);padding:26px;overflow-y:auto;animation:slideright .28s cubic-bezier(.2,.8,.2,1);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);background:color-mix(in srgb,var(--accent) 11%,transparent);padding:4px 11px;border-radius:8px;">{{ drawer.sku }}</span>
+        <button onClick="{{ closeDrawer }}" style="width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);" style-hover="border-color:var(--accent)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <h2 style="margin:12px 0 4px;font-size:20px;font-weight:700;letter-spacing:-.4px;">{{ drawer.name }}</h2>
+      <div style="font-size:13px;color:var(--dim);margin-bottom:20px;">{{ drawer.cat }}</div>
+
+      <div class="sf-2col" style="display:grid;gap:11px;margin-bottom:22px;">
+        <div style="padding:14px;border-radius:13px;background:var(--card-2);border:1px solid var(--border-2);"><div style="font-size:11.5px;color:var(--faint);">คงเหลือรวม</div><div style="font-size:20px;font-weight:700;margin-top:4px;">{{ drawer.totalText }} <span style="font-size:12px;color:var(--faint);font-weight:400;">{{ drawer.unit }}</span></div></div>
+        <div style="padding:14px;border-radius:13px;background:var(--card-2);border:1px solid var(--border-2);"><div style="font-size:11.5px;color:var(--faint);">มูลค่ารวม</div><div style="font-size:20px;font-weight:700;margin-top:4px;">{{ drawer.valueText }}</div></div>
+        <div style="padding:14px;border-radius:13px;background:var(--card-2);border:1px solid var(--border-2);"><div style="font-size:11.5px;color:var(--faint);">ราคา/หน่วย</div><div style="font-size:16px;font-weight:700;margin-top:4px;">{{ drawer.price }}</div></div>
+        <div style="padding:14px;border-radius:13px;background:var(--card-2);border:1px solid var(--border-2);"><div style="font-size:11.5px;color:var(--faint);">สถานะ</div><div style="font-size:15px;font-weight:700;margin-top:6px;color:{{ drawer.statusColor }};">{{ drawer.statusText }}</div></div>
+      </div>
+
+      <div style="font-size:13.5px;font-weight:700;margin-bottom:12px;">การกระจายตาม Location</div>
+      <div style="display:flex;flex-direction:column;gap:13px;margin-bottom:24px;">
+        <sc-for list="{{ drawer.perZone }}" as="z" hint-placeholder-count="4">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px;"><span style="color:var(--dim);">{{ z.zone }}</span><span style="font-weight:600;">{{ z.qty }} ({{ z.pct }}%)</span></div>
+            <div style="height:8px;border-radius:6px;background:var(--border-2);overflow:hidden;"><div style="{{ z.barStyle }}"></div></div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button onClick="{{ drawerToInbound }}" style="flex:1;height:46px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-weight:700;font-size:14px;cursor:pointer;" style-hover="filter:brightness(1.06)">รับเข้า</button>
+        <button onClick="{{ drawerToOutbound }}" style="flex:1;height:46px;border-radius:12px;border:1px solid var(--border);background:var(--card-2);color:var(--text);font-weight:700;font-size:14px;cursor:pointer;" style-hover="border-color:var(--accent)">จ่ายออก</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- PRODUCT EDITOR MODAL -->
+  <sc-if value="{{ editor.open }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeEditor }}" style="position:fixed;inset:0;background:rgba(6,14,10,.55);backdrop-filter:blur(5px);z-index:52;display:flex;align-items:center;justify-content:center;animation:popin .2s ease;padding:24px;">
+      <div onClick="{{ stop }}" style="width:560px;max-width:96vw;max-height:90vh;overflow-y:auto;border-radius:22px;background:var(--solid);border:1px solid var(--border);box-shadow:var(--shadow);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent);flex:none;">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8M8 12h8"/></svg>
+            </span>
+            <div>
+              <div style="font-size:16px;font-weight:700;">{{ editor.title }}</div>
+              <div style="font-size:12px;color:var(--dim);margin-top:2px;">ข้อมูลหลักของสินค้า (Master Data)</div>
+            </div>
+          </div>
+          <button onClick="{{ closeEditor }}" style="width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);" style-hover="border-color:var(--accent)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="padding:24px;">
+          <div class="sf-2col" style="display:grid;gap:16px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">รหัสสินค้า (SKU)</label>
+              <input name="sku" value="{{ editor.form.sku }}" onInput="{{ onEditorChange }}" readOnly="{{ editor.skuReadonly }}" placeholder="SKU-1011" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;font-family:'IBM Plex Mono',monospace;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">บาร์โค้ด</label>
+              <input name="barcode" value="{{ editor.form.barcode }}" onInput="{{ onEditorChange }}" placeholder="STK1011" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;font-family:'IBM Plex Mono',monospace;" />
+            </div>
+          </div>
+          <div style="margin-top:16px;">
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">ชื่อสินค้า</label>
+            <input name="name" value="{{ editor.form.name }}" onInput="{{ onEditorChange }}" placeholder="เช่น สว่านไฟฟ้าไร้สาย" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;" />
+          </div>
+          <div class="sf-2col" style="display:grid;gap:16px;margin-top:16px;">
+            <div>
+              <label style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">หมวดหมู่ <button onClick="{{ openCatMgr }}" style="border:none;background:none;color:var(--accent);font-size:11.5px;font-weight:600;cursor:pointer;padding:0;display:flex;align-items:center;gap:3px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>จัดการ</button></label>
+              <select name="cat" value="{{ editor.form.cat }}" onChange="{{ onEditorChange }}" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;cursor:pointer;">
+                <option value="">— เลือกหมวดหมู่ —</option>
+                <sc-for list="{{ catOptions }}" as="o" hint-placeholder-count="5"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+              </select>
+            </div>
+            <div>
+              <label style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">หน่วยนับ <button onClick="{{ openUnitMgr }}" style="border:none;background:none;color:var(--accent);font-size:11.5px;font-weight:600;cursor:pointer;padding:0;display:flex;align-items:center;gap:3px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>จัดการ</button></label>
+              <select name="unit" value="{{ editor.form.unit }}" onChange="{{ onEditorChange }}" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;cursor:pointer;">
+                <option value="">— เลือกหน่วยนับ —</option>
+                <sc-for list="{{ unitOptions }}" as="o" hint-placeholder-count="5"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+              </select>
+            </div>
+          </div>
+          <div class="sf-2col" style="display:grid;gap:16px;margin-top:16px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">ราคา/หน่วย (฿)</label>
+              <input name="price" type="number" min="0" value="{{ editor.form.price }}" onInput="{{ onEditorChange }}" placeholder="0" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">จุดสั่งซื้อขั้นต่ำ</label>
+              <input name="min" type="number" min="0" value="{{ editor.form.min }}" onInput="{{ onEditorChange }}" placeholder="0" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;" />
+            </div>
+          </div>
+          <datalist id="sf-catlist"><sc-for list="{{ catSuggest }}" as="c" hint-placeholder-count="5"><option value="{{ c.value }}"></option></sc-for></datalist>
+          <datalist id="sf-unitlist"><sc-for list="{{ unitSuggest }}" as="u" hint-placeholder-count="5"><option value="{{ u.value }}"></option></sc-for></datalist>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:18px 24px;border-top:1px solid var(--border);">
+          <sc-if value="{{ editor.canDelete }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ deleteProduct }}" style="height:44px;padding:0 16px;border-radius:11px;border:1px solid color-mix(in srgb,#ef4444 40%,transparent);background:color-mix(in srgb,#ef4444 8%,transparent);color:#ef4444;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;" style-hover="background:color-mix(in srgb,#ef4444 14%,transparent)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              ลบ
+            </button>
+          </sc-if>
+          <div style="flex:1;"></div>
+          <button onClick="{{ closeEditor }}" style="height:44px;padding:0 20px;border-radius:11px;border:1px solid var(--border);background:var(--card-2);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;" style-hover="border-color:var(--accent)">ยกเลิก</button>
+          <button onClick="{{ saveProduct }}" style="height:44px;padding:0 24px;border-radius:11px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 10px 22px -12px var(--accent);" style-hover="filter:brightness(1.06)">{{ editor.saveLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- LOCATION EDITOR MODAL -->
+  <sc-if value="{{ locEditor.open }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeLocEditor }}" style="position:fixed;inset:0;background:rgba(6,14,10,.55);backdrop-filter:blur(5px);z-index:53;display:flex;align-items:center;justify-content:center;animation:popin .2s ease;padding:24px;">
+      <div onClick="{{ stop }}" style="width:480px;max-width:96vw;max-height:90vh;overflow-y:auto;border-radius:22px;background:var(--solid);border:1px solid var(--border);box-shadow:var(--shadow);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent);flex:none;">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-7h6v7"/></svg>
+            </span>
+            <div>
+              <div style="font-size:16px;font-weight:700;">{{ locEditor.title }}</div>
+              <div style="font-size:12px;color:var(--dim);margin-top:2px;">โครงสร้าง คลังสินค้า → โซน</div>
+            </div>
+          </div>
+          <button onClick="{{ closeLocEditor }}" style="width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);" style-hover="border-color:var(--accent)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="padding:24px;">
+          <sc-if value="{{ locEditor.isWh }}" hint-placeholder-val="{{ false }}">
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">ชื่อคลังสินค้า</label>
+            <input name="wh" value="{{ locEditor.form.wh }}" onInput="{{ onLocChange }}" placeholder="เช่น คลังสินค้า C" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;" />
+          </sc-if>
+          <sc-if value="{{ locEditor.isZone }}" hint-placeholder-val="{{ false }}">
+            <div class="sf-2col" style="display:grid;gap:16px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">รหัสโซน (Code)</label>
+                <input name="code" value="{{ locEditor.form.code }}" onInput="{{ onLocChange }}" readOnly="{{ locEditor.codeReadonly }}" placeholder="A-Z3" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;font-family:'IBM Plex Mono',monospace;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">ความจุ (หน่วย)</label>
+                <input name="cap" type="number" min="0" value="{{ locEditor.form.cap }}" onInput="{{ onLocChange }}" placeholder="1000" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;" />
+              </div>
+            </div>
+            <div style="margin-top:16px;">
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">ชื่อโซน</label>
+              <input name="name" value="{{ locEditor.form.name }}" onInput="{{ onLocChange }}" placeholder="เช่น โซน 3 · สินค้าพิเศษ" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;" />
+            </div>
+          </sc-if>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:18px 24px;border-top:1px solid var(--border);">
+          <sc-if value="{{ locEditor.canDelete }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ deleteLoc }}" style="height:44px;padding:0 16px;border-radius:11px;border:1px solid color-mix(in srgb,#ef4444 40%,transparent);background:color-mix(in srgb,#ef4444 8%,transparent);color:#ef4444;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;" style-hover="background:color-mix(in srgb,#ef4444 14%,transparent)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              ลบ
+            </button>
+          </sc-if>
+          <div style="flex:1;"></div>
+          <button onClick="{{ closeLocEditor }}" style="height:44px;padding:0 20px;border-radius:11px;border:1px solid var(--border);background:var(--card-2);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;" style-hover="border-color:var(--accent)">ยกเลิก</button>
+          <button onClick="{{ saveLoc }}" style="height:44px;padding:0 24px;border-radius:11px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 10px 22px -12px var(--accent);" style-hover="filter:brightness(1.06)">{{ locEditor.saveLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- PROFILE MODAL -->
+  <sc-if value="{{ profileOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeProfile }}" style="position:fixed;inset:0;background:rgba(6,14,10,.55);backdrop-filter:blur(5px);z-index:54;display:flex;align-items:center;justify-content:center;animation:popin .2s ease;padding:24px;">
+      <div onClick="{{ stop }}" style="width:440px;max-width:96vw;border-radius:22px;background:var(--solid);border:1px solid var(--border);box-shadow:var(--shadow);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="width:46px;height:46px;border-radius:50%;background:linear-gradient(140deg,var(--accent-3),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;flex:none;">{{ userInitial }}</span>
+            <div>
+              <div style="font-size:16px;font-weight:700;">ข้อมูลผู้ใช้งาน</div>
+              <div style="font-size:12px;color:var(--dim);margin-top:2px;">แก้ไขชื่อ ตำแหน่ง และสิทธิ์การใช้งาน</div>
+            </div>
+          </div>
+          <button onClick="{{ closeProfile }}" style="width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);" style-hover="border-color:var(--accent)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="padding:24px;max-height:62vh;overflow-y:auto;">
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:7px;">Username</label>
+          <input value="{{ profileForm.username }}" readOnly="{{ true }}" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--card-2);color:var(--dim);font-size:14px;font-family:'IBM Plex Mono',monospace;margin-bottom:16px;" />
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:7px;">ชื่อผู้ใช้งาน</label>
+          <input name="name" value="{{ profileForm.name }}" onInput="{{ onProfileChange }}" placeholder="ชื่อ-สกุล" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;margin-bottom:16px;" />
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:7px;">ตำแหน่ง</label>
+          <input name="title" value="{{ profileForm.title }}" onInput="{{ onProfileChange }}" placeholder="เช่น ผู้จัดการคลัง" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;margin-bottom:16px;" />
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:7px;">สิทธิ์การใช้งาน</label>
+          <div style="display:flex;gap:10px;">
+            <button onClick="{{ setProfAdmin }}" style="{{ profRoleAdmin }}">Admin · จัดการทั้งหมด</button>
+            <button onClick="{{ setProfUser }}" style="{{ profRoleUser }}">User · ดู &amp; ทำรายการ</button>
+          </div>
+
+          <div style="margin-top:18px;padding:14px;border-radius:13px;background:var(--card-2);border:1px solid var(--border-2);">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span style="font-size:13px;font-weight:600;">รหัสผ่าน</span>
+              </div>
+              <sc-if value="{{ profNotChangingPw }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ toggleProfileChangePw }}" type="button" style="height:34px;padding:0 14px;border-radius:9px;border:1px solid var(--border);background:var(--solid);color:var(--accent);font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;" style-hover="border-color:var(--accent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>เปลี่ยนรหัสผ่าน</button>
+              </sc-if>
+              <sc-if value="{{ profChangingPw }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ toggleProfileChangePw }}" type="button" style="height:34px;padding:0 14px;border-radius:9px;border:1px solid var(--border);background:var(--solid);color:var(--dim);font-size:12.5px;font-weight:600;cursor:pointer;" style-hover="border-color:var(--accent)">ยกเลิก</button>
+              </sc-if>
+            </div>
+            <sc-if value="{{ profNotChangingPw }}" hint-placeholder-val="{{ true }}">
+              <div style="margin-top:10px;font-size:12px;color:var(--dim);line-height:1.6;">กดเพื่อเปลี่ยนรหัสผ่านปัจจุบันของบัญชีคุณ — ต้องยืนยันรหัสผ่านเดิมก่อน</div>
+            </sc-if>
+            <sc-if value="{{ profChangingPw }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:11px;display:flex;flex-direction:column;gap:11px;">
+                <div>
+                  <label style="display:block;font-size:11.5px;font-weight:600;color:var(--dim);margin-bottom:5px;">รหัสผ่านเดิม</label>
+                  <input name="oldPw" value="{{ profileForm.oldPw }}" onInput="{{ onProfileChange }}" type="password" placeholder="กรอกรหัสผ่านปัจจุบัน" autocomplete="off" style="width:100%;height:42px;padding:0 13px;border-radius:10px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;font-family:'IBM Plex Mono',monospace;" />
+                </div>
+                <div>
+                  <label style="display:block;font-size:11.5px;font-weight:600;color:var(--dim);margin-bottom:5px;">รหัสผ่านใหม่</label>
+                  <input name="newPw" value="{{ profileForm.newPw }}" onInput="{{ onProfileChange }}" type="text" placeholder="ตั้งรหัสผ่านใหม่" autocomplete="off" style="width:100%;height:42px;padding:0 13px;border-radius:10px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;font-family:'IBM Plex Mono',monospace;" />
+                </div>
+                <div>
+                  <label style="display:block;font-size:11.5px;font-weight:600;color:var(--dim);margin-bottom:5px;">ยืนยันรหัสผ่านใหม่</label>
+                  <input name="confirmPw" value="{{ profileForm.confirmPw }}" onInput="{{ onProfileChange }}" type="text" placeholder="พิมพ์รหัสผ่านใหม่อีกครั้ง" autocomplete="off" style="width:100%;height:42px;padding:0 13px;border-radius:10px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;font-family:'IBM Plex Mono',monospace;" />
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:10px;background:color-mix(in srgb,var(--accent) 7%,transparent);border:1px solid var(--border-2);">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <div style="min-width:0;flex:1;">
+                    <div style="font-size:10.5px;color:var(--faint);">ค่าที่จะจัดเก็บ (เข้ารหัส XOR + Base64)</div>
+                    <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ profNewEnc }}</div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:18px 24px;border-top:1px solid var(--border);">
+          <button onClick="{{ closeProfile }}" style="height:44px;padding:0 20px;border-radius:11px;border:1px solid var(--border);background:var(--card-2);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;" style-hover="border-color:var(--accent)">ยกเลิก</button>
+          <button onClick="{{ saveProfile }}" style="height:44px;padding:0 24px;border-radius:11px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 10px 22px -12px var(--accent);" style-hover="filter:brightness(1.06)">บันทึก</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- USER EDITOR MODAL -->
+  <sc-if value="{{ userEditor.open }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeUserEditor }}" style="position:fixed;inset:0;background:rgba(6,14,10,.55);backdrop-filter:blur(5px);z-index:54;display:flex;align-items:center;justify-content:center;animation:popin .2s ease;padding:24px;">
+      <div onClick="{{ stop }}" style="width:460px;max-width:96vw;max-height:90vh;overflow-y:auto;border-radius:22px;background:var(--solid);border:1px solid var(--border);box-shadow:var(--shadow);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent);flex:none;">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+            </span>
+            <div>
+              <div style="font-size:16px;font-weight:700;">{{ userEditor.title }}</div>
+              <div style="font-size:12px;color:var(--dim);margin-top:2px;">ข้อมูลบัญชีและสิทธิ์การเข้าถึง</div>
+            </div>
+          </div>
+          <button onClick="{{ closeUserEditor }}" style="width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);" style-hover="border-color:var(--accent)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="padding:24px;">
+          <div class="sf-2col" style="display:grid;gap:16px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">ชื่อ-สกุล</label>
+              <input name="name" value="{{ userEditor.form.name }}" onInput="{{ onUserEditorChange }}" placeholder="เช่น สมหญิง ใจดี" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">Username</label>
+              <input name="username" value="{{ userEditor.form.username }}" onInput="{{ onUserEditorChange }}" placeholder="username" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;font-family:'IBM Plex Mono',monospace;" />
+            </div>
+          </div>
+          <sc-if value="{{ userEditor.isAdd }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:16px;">
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">Password</label>
+            <div style="position:relative;">
+              <input name="password" value="{{ userEditor.form.password }}" onInput="{{ onUserEditorChange }}" type="{{ userEditor.pwType }}" placeholder="กำหนดรหัสผ่าน" autocomplete="new-password" style="width:100%;height:44px;padding:0 46px 0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;font-family:'IBM Plex Mono',monospace;" />
+              <button onClick="{{ toggleUserPw }}" type="button" title="แสดง/ซ่อนรหัสผ่าน" style="position:absolute;right:6px;top:6px;width:32px;height:32px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);" style-hover="background:var(--card-2)">
+                <sc-if value="{{ userEditor.pwVisible }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></sc-if>
+                <sc-if value="{{ userEditor.pwHidden }}" hint-placeholder-val="{{ true }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.9 4.2A9.8 9.8 0 0 1 12 4c6.5 0 10 7 10 7a16 16 0 0 1-2.6 3.4M6.6 6.6A16 16 0 0 0 2 11s3.5 7 10 7a9.8 9.8 0 0 0 4.3-1M3 3l18 18"/></svg></sc-if>
+              </button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:9px;padding:9px 11px;border-radius:10px;background:color-mix(in srgb,var(--accent) 7%,transparent);border:1px solid var(--border-2);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:10.5px;color:var(--faint);">ค่าที่จัดเก็บ (เข้ารหัส XOR + Base64)</div>
+                <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ userEditor.encPreview }}</div>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ userEditor.isEdit }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:16px;padding:14px;border-radius:13px;background:var(--card-2);border:1px solid var(--border-2);">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span style="font-size:13px;font-weight:600;">รหัสผ่าน</span>
+              </div>
+              <sc-if value="{{ userEditor.notReset }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ resetPassword }}" type="button" style="height:34px;padding:0 14px;border-radius:9px;border:1px solid var(--border);background:var(--solid);color:var(--accent);font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;" style-hover="border-color:var(--accent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>รีเซ็ตรหัสผ่าน</button>
+              </sc-if>
+              <sc-if value="{{ userEditor.didReset }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ cancelReset }}" type="button" style="height:34px;padding:0 14px;border-radius:9px;border:1px solid var(--border);background:var(--solid);color:var(--dim);font-size:12.5px;font-weight:600;cursor:pointer;" style-hover="border-color:var(--accent)">ยกเลิก</button>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ userEditor.notReset }}" hint-placeholder-val="{{ true }}">
+              <div style="margin-top:10px;font-size:12px;color:var(--dim);line-height:1.6;">กดปุ่ม "รีเซ็ตรหัสผ่าน" เพื่อสร้างรหัสผ่านชั่วคราวให้ผู้ใช้ — ระบบจะตั้งรหัสใหม่แบบสุ่มและเข้ารหัสจัดเก็บอัตโนมัติ</div>
+            </sc-if>
+
+            <sc-if value="{{ userEditor.didReset }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:11px;display:flex;flex-direction:column;gap:10px;">
+                <div style="font-size:12px;color:var(--dim);">รหัสผ่านชั่วคราวใหม่ (แจ้งให้ผู้ใช้เปลี่ยนภายหลัง):</div>
+                <div style="position:relative;">
+                  <input value="{{ userEditor.form.resetPw }}" readOnly="{{ true }}" type="{{ userEditor.pwType }}" style="width:100%;height:46px;padding:0 84px 0 13px;border-radius:11px;border:1.5px solid var(--accent);background:var(--solid);color:var(--accent);font-size:16px;font-weight:600;letter-spacing:1px;font-family:'IBM Plex Mono',monospace;" />
+                  <div style="position:absolute;right:6px;top:7px;display:flex;gap:4px;">
+                    <button onClick="{{ toggleUserPw }}" type="button" title="แสดง/ซ่อน" style="width:32px;height:32px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);" style-hover="background:var(--card-2)">
+                      <sc-if value="{{ userEditor.pwVisible }}" hint-placeholder-val="{{ true }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></sc-if>
+                      <sc-if value="{{ userEditor.pwHidden }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.9 4.2A9.8 9.8 0 0 1 12 4c6.5 0 10 7 10 7a16 16 0 0 1-2.6 3.4M6.6 6.6A16 16 0 0 0 2 11s3.5 7 10 7a9.8 9.8 0 0 0 4.3-1M3 3l18 18"/></svg></sc-if>
+                    </button>
+                    <button onClick="{{ resetPassword }}" type="button" title="สุ่มใหม่" style="width:32px;height:32px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--accent);" style-hover="background:var(--card-2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg></button>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:10px;background:color-mix(in srgb,var(--accent) 7%,transparent);border:1px solid var(--border-2);">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <div style="min-width:0;flex:1;">
+                    <div style="font-size:10.5px;color:var(--faint);">ค่าที่จะจัดเก็บ (เข้ารหัส XOR + Base64)</div>
+                    <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ userEditor.encPreview }}</div>
+                  </div>
+                </div>
+                <div style="font-size:11.5px;color:var(--warn);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>รหัสจะมีผลเมื่อกด "บันทึก"</div>
+              </div>
+            </sc-if>
+          </div>
+          </sc-if>
+          <div style="margin-top:16px;">
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">ตำแหน่ง</label>
+            <input name="title" value="{{ userEditor.form.title }}" onInput="{{ onUserEditorChange }}" placeholder="เช่น เจ้าหน้าที่คลัง" style="width:100%;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;" />
+          </div>
+          <div style="margin-top:16px;">
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;">สิทธิ์การใช้งาน</label>
+            <div style="display:flex;gap:10px;">
+              <button onClick="{{ setUserRoleAdmin }}" style="{{ userEditor.roleAdmin }}">Admin · จัดการทั้งหมด</button>
+              <button onClick="{{ setUserRoleUser }}" style="{{ userEditor.roleUser }}">User · ดู &amp; ทำรายการ</button>
+            </div>
+          </div>
+          <button onClick="{{ toggleUserActive }}" style="margin-top:16px;width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;color:var(--text);font-size:13.5px;font-weight:600;">
+            <span>สถานะการใช้งาน · {{ userEditor.activeLabel }}</span>
+            <span style="width:40px;height:23px;border-radius:20px;background:{{ userEditor.activeTrackBg }};position:relative;transition:.2s;flex:none;">
+              <span style="position:absolute;top:2px;left:{{ userEditor.activeKnobX }};width:19px;height:19px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 2px 5px rgba(0,0,0,.3);"></span>
+            </span>
+          </button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:18px 24px;border-top:1px solid var(--border);">
+          <sc-if value="{{ userEditor.canDelete }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ deleteUser }}" style="height:44px;padding:0 16px;border-radius:11px;border:1px solid color-mix(in srgb,#ef4444 40%,transparent);background:color-mix(in srgb,#ef4444 8%,transparent);color:#ef4444;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;" style-hover="background:color-mix(in srgb,#ef4444 14%,transparent)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              ลบ
+            </button>
+          </sc-if>
+          <div style="flex:1;"></div>
+          <button onClick="{{ closeUserEditor }}" style="height:44px;padding:0 20px;border-radius:11px;border:1px solid var(--border);background:var(--card-2);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;" style-hover="border-color:var(--accent)">ยกเลิก</button>
+          <button onClick="{{ saveUser }}" style="height:44px;padding:0 24px;border-radius:11px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 10px 22px -12px var(--accent);" style-hover="filter:brightness(1.06)">{{ userEditor.saveLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- LIST MANAGER MODAL (categories / units) -->
+  <sc-if value="{{ listMgr.open }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeListMgr }}" style="position:fixed;inset:0;background:rgba(6,14,10,.55);backdrop-filter:blur(5px);z-index:55;display:flex;align-items:center;justify-content:center;animation:popin .2s ease;padding:24px;">
+      <div onClick="{{ stop }}" style="width:440px;max-width:96vw;max-height:90vh;display:flex;flex-direction:column;border-radius:22px;background:var(--solid);border:1px solid var(--border);box-shadow:var(--shadow);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent);flex:none;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            </span>
+            <div>
+              <div style="font-size:16px;font-weight:700;">{{ listMgr.title }}</div>
+              <div style="font-size:12px;color:var(--dim);margin-top:2px;">ทั้งหมด {{ listMgr.count }} รายการ</div>
+            </div>
+          </div>
+          <button onClick="{{ closeListMgr }}" style="width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);" style-hover="border-color:var(--accent)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;gap:9px;">
+          <input value="{{ listMgr.draft }}" onInput="{{ onListDraft }}" placeholder="เพิ่ม{{ listMgr.label }}ใหม่..." style="flex:1;height:44px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:var(--solid);color:var(--text);font-size:14px;" />
+          <button onClick="{{ addListItem }}" style="height:44px;padding:0 18px;border-radius:11px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;" style-hover="filter:brightness(1.06)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>เพิ่ม
+          </button>
+        </div>
+        <div style="padding:14px 24px 22px;overflow-y:auto;display:flex;flex-direction:column;gap:9px;">
+          <sc-for list="{{ listMgr.items }}" as="it" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:12px;background:var(--card-2);border:1px solid var(--border-2);">
+              <sc-if value="{{ it.editing }}" hint-placeholder-val="{{ false }}">
+                <input value="{{ listMgr.editValue }}" onInput="{{ onEditItemChange }}" style="flex:1;height:36px;padding:0 11px;border-radius:9px;border:1px solid var(--accent);background:var(--solid);color:var(--text);font-size:13.5px;" />
+                <button onClick="{{ saveEditItem }}" style="height:36px;padding:0 14px;border-radius:9px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">บันทึก</button>
+              </sc-if>
+              <sc-if value="{{ it.notEditing }}" hint-placeholder-val="{{ true }}">
+                <span style="flex:1;font-size:14px;font-weight:500;">{{ it.value }}</span>
+                <button onClick="{{ it.onEdit }}" title="แก้ไข" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:var(--solid);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--accent);" style-hover="border-color:var(--accent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                <button onClick="{{ it.onDelete }}" title="ลบ" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:var(--solid);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#ef4444;" style-hover="border-color:#ef4444"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCANNER MODAL -->
+  <sc-if value="{{ scanOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeScan }}" style="position:fixed;inset:0;background:rgba(6,14,10,.6);backdrop-filter:blur(5px);z-index:50;display:flex;align-items:center;justify-content:center;animation:popin .2s ease;">
+      <div onClick="{{ stop }}" style="width:420px;max-width:92vw;border-radius:22px;overflow:hidden;background:var(--solid);border:1px solid var(--border);box-shadow:var(--shadow);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);">
+          <div style="font-size:15px;font-weight:700;">สแกน Barcode / QR Code</div>
+          <button onClick="{{ closeScan }}" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="position:relative;aspect-ratio:4/3;background:#0a0f0c;overflow:hidden;">
+          <video id="sf-video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
+          <sc-if value="{{ camErr }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#94a3b8;text-align:center;padding:20px;">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <div style="font-size:13px;">ไม่สามารถเข้าถึงกล้องได้<br>ใช้ปุ่ม "จำลองการสแกน" เพื่อทดสอบ</div>
+            </div>
+          </sc-if>
+          <div style="position:absolute;inset:0;pointer-events:none;">
+            <div style="position:absolute;left:14%;right:14%;top:22%;bottom:22%;border:2px solid rgba(255,255,255,.85);border-radius:14px;box-shadow:0 0 0 2000px rgba(0,0,0,.35);"></div>
+            <div style="position:absolute;left:16%;right:16%;height:2px;background:linear-gradient(90deg,transparent,var(--accent-3),transparent);box-shadow:0 0 14px 2px var(--accent-3);animation:scanline 1.8s ease-in-out infinite alternate;"></div>
+          </div>
+        </div>
+        <div style="padding:18px 22px;">
+          <button onClick="{{ simulateScan }}" style="width:100%;height:48px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;animation:pulsering 2s infinite;" style-hover="filter:brightness(1.06)">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
+            จำลองการสแกน
+          </button>
+          <div style="font-size:11.5px;color:var(--faint);text-align:center;margin-top:11px;">เล็งโค้ดให้อยู่ในกรอบ ระบบจะตรวจจับอัตโนมัติ</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- TOAST -->
+  <sc-if value="{{ toast.show }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:12px;padding:14px 20px;border-radius:14px;background:var(--solid);border:1px solid var(--border);box-shadow:var(--shadow);animation:fadeup .3s ease;min-width:280px;">
+      <span style="width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:{{ toast.bg }};color:{{ toast.color }};flex:none;">{{ toast.icon }}</span>
+      <div style="flex:1;">
+        <div style="font-size:13.5px;font-weight:600;">{{ toast.title }}</div>
+        <div style="font-size:12px;color:var(--dim);margin-top:1px;">{{ toast.msg }}</div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:840},&quot;brand&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Mee Stock&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;defaultTheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;emerald&quot;,&quot;options&quot;:[&quot;emerald&quot;,&quot;ocean&quot;,&quot;violet&quot;,&quot;amber&quot;,&quot;rose&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;decor&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  products = [
+    {sku:'SKU-1001',name:'สว่านไฟฟ้าไร้สาย DXC-180',cat:'เครื่องมือช่าง',unit:'เครื่อง',min:8,price:2890,barcode:'STK1001DXC180'},
+    {sku:'SKU-1002',name:'ดอกสว่านชุด 25 ชิ้น',cat:'เครื่องมือช่าง',unit:'ชุด',min:20,price:450,barcode:'STK1002DRL25'},
+    {sku:'SKU-1003',name:'น็อตหัวจม M8 x 30',cat:'ฮาร์ดแวร์',unit:'กล่อง',min:50,price:180,barcode:'STK1003BLTM8'},
+    {sku:'SKU-1004',name:'เทปพันสายไฟ PVC',cat:'วัสดุสิ้นเปลือง',unit:'ม้วน',min:100,price:25,barcode:'STK1004TAPEPVC'},
+    {sku:'SKU-1005',name:'กล่องลูกฟูก 40x30x25',cat:'บรรจุภัณฑ์',unit:'ใบ',min:200,price:12,barcode:'STK1005BOX4030'},
+    {sku:'SKU-1006',name:'สายไฟ THW 2.5 sq.mm',cat:'วัสดุสิ้นเปลือง',unit:'ม้วน',min:30,price:890,barcode:'STK1006WIRE25'},
+    {sku:'SKU-1007',name:'ถุงมือนิรภัยเคลือบยาง',cat:'อุปกรณ์เซฟตี้',unit:'คู่',min:60,price:35,barcode:'STK1007GLOVE'},
+    {sku:'SKU-1008',name:'หมวกนิรภัย ABS',cat:'อุปกรณ์เซฟตี้',unit:'ใบ',min:40,price:120,barcode:'STK1008HELMET'},
+    {sku:'SKU-1009',name:'น้ำมันหล่อลื่น 1 ลิตร',cat:'วัตถุดิบ',unit:'ขวด',min:50,price:160,barcode:'STK1009OIL1L'},
+    {sku:'SKU-1010',name:'แผ่นเหล็กรีดเย็น 1 มม.',cat:'วัตถุดิบ',unit:'แผ่น',min:25,price:340,barcode:'STK1010STEEL1'},
+  ];
+  zonesMeta = [
+    {wh:'คลังสินค้า A',zones:[{code:'A-Z1',name:'โซน 1 · สินค้าหนัก',cap:1200},{code:'A-Z2',name:'โซน 2 · สินค้าทั่วไป',cap:1600}]},
+    {wh:'คลังสินค้า B',zones:[{code:'B-Z1',name:'โซน 1 · สินค้าหมุนเวียนไว',cap:1800},{code:'B-Z2',name:'โซน 2 · อุปกรณ์เซฟตี้',cap:1400}]},
+  ];
+  zoneList = [];
+  zoneName = {};
+  zoneCap = {};
+  palette = ['#10b981','#3b82f6','#f59e0b','#8b5cf6','#06b6d4','#ef4444','#ec4899'];
+
+  constructor(props){
+    super(props);
+    this.videoRef = React.createRef();
+    this.barcodeRef = React.createRef();
+    this.qrRef = React.createRef();
+    this._codeDrawn = null;
+    this.rebuildZones();
+    this.categories = [...new Set(this.products.map(p=>p.cat))];
+    this.units = [...new Set(this.products.map(p=>p.unit))];
+    this.users = [
+      {id:1,name:'สมชาย วงศ์ดี',username:'somchai',password:'somchai123',title:'ผู้จัดการคลัง',role:'admin',active:true},
+      {id:2,name:'อารยา ศรีสุข',username:'araya',password:'araya123',title:'เจ้าหน้าที่คลัง',role:'user',active:true},
+      {id:3,name:'ธนกร ภักดี',username:'thanakorn',password:'thanakorn123',title:'พนักงานรับ-จ่ายสินค้า',role:'user',active:true},
+      {id:4,name:'ปรีชา มั่นคง',username:'preecha',password:'preecha123',title:'หัวหน้าแผนกตรวจรับ',role:'admin',active:false},
+    ];
+    this.users.forEach(u=>{ u.enc=this.encode(u.password||('mee'+u.id)); delete u.password; });
+    this.state = {
+      auth:null,
+      loginForm:{username:'',password:'',role:'admin'},
+      profileOpen:false,
+      profileForm:{name:'',title:'',role:'admin'},
+      listMgr:null,
+      userEditor:null,
+      navOpen:false,
+      route:'dashboard',
+      theme: props.defaultTheme || 'emerald',
+      mode:'light',
+      themeOpen:false,
+      flowType:'in',
+      form:{sku:'',zone:'',qty:'',ref:''},
+      drawer:null,
+      codeSku:'SKU-1001',
+      scanOpen:false,
+      camErr:false,
+      moveFilter:'all',
+      q:'',
+      toast:null,
+      stock:this.seedStock(),
+      movements:this.seedMoves(),
+      trend:[{d:'จ',in:120,out:90},{d:'อ',in:205,out:150},{d:'พ',in:95,out:175},{d:'พฤ',in:260,out:120},{d:'ศ',in:180,out:215},{d:'ส',in:140,out:80},{d:'อา',in:225,out:160}],
+    };
+  }
+
+  seedStock(){
+    const base=[6,180,640,1240,2100,22,320,150,38,90];
+    const frac=[0.42,0.23,0.2,0.15];
+    const s={};
+    this.products.forEach((p,i)=>{
+      s[p.sku]={};
+      this.zoneList.forEach((z,k)=>{ s[p.sku][z]=Math.round(base[i]*frac[k]); });
+    });
+    return s;
+  }
+  seedMoves(){
+    const u1='สมชาย วงศ์ดี', u2='อารยา ศรีสุข', u3='ธนกร ภักดี';
+    const N=this.products;
+    return [
+      {id:9,ts:'วันนี้',time:'14:22',type:'out',sku:'SKU-1005',name:N[4].name,qty:120,zone:'B-Z1',ref:'SO-2401',user:u2},
+      {id:8,ts:'วันนี้',time:'11:40',type:'in',sku:'SKU-1003',name:N[2].name,qty:80,zone:'A-Z1',ref:'PO-7781',user:u1},
+      {id:7,ts:'วันนี้',time:'09:15',type:'in',sku:'SKU-1001',name:N[0].name,qty:6,zone:'A-Z1',ref:'PO-7780',user:u1},
+      {id:6,ts:'เมื่อวาน',time:'16:50',type:'out',sku:'SKU-1007',name:N[6].name,qty:45,zone:'B-Z2',ref:'SO-2399',user:u3},
+      {id:5,ts:'เมื่อวาน',time:'13:10',type:'out',sku:'SKU-1004',name:N[3].name,qty:60,zone:'A-Z2',ref:'SO-2398',user:u2},
+      {id:4,ts:'เมื่อวาน',time:'10:05',type:'in',sku:'SKU-1006',name:N[5].name,qty:24,zone:'B-Z1',ref:'PO-7779',user:u1},
+      {id:3,ts:'18/06',time:'15:30',type:'in',sku:'SKU-1009',name:N[8].name,qty:120,zone:'A-Z2',ref:'PO-7775',user:u3},
+      {id:2,ts:'18/06',time:'11:20',type:'out',sku:'SKU-1010',name:N[9].name,qty:18,zone:'A-Z1',ref:'SO-2390',user:u2},
+      {id:1,ts:'17/06',time:'09:45',type:'in',sku:'SKU-1008',name:N[7].name,qty:60,zone:'B-Z2',ref:'PO-7770',user:u1},
+    ];
+  }
+
+  fmt(n){ return Math.round(n).toLocaleString('en-US'); }
+  money(n){ if(n>=1000000) return '฿'+(n/1000000).toFixed(2)+'M'; return '฿'+this.fmt(n); }
+  statusInfo(s){
+    if(s==='out') return {c:'#ef4444',t:'หมดสต๊อก',bg:'color-mix(in srgb,#ef4444 12%,transparent)'};
+    if(s==='low') return {c:'#f59e0b',t:'ใกล้หมด',bg:'color-mix(in srgb,#f59e0b 14%,transparent)'};
+    return {c:'var(--accent)',t:'ปกติ',bg:'color-mix(in srgb,var(--accent) 12%,transparent)'};
+  }
+
+  showToast(title,msg,kind){
+    this.setState({toast:{title,msg,kind}});
+    clearTimeout(this._tt);
+    this._tt=setTimeout(()=>this.setState({toast:null}),2800);
+  }
+
+  nav(route){ this.setState({route, q:'', drawer:null, themeOpen:false, navOpen:false}); }
+  toggleNav(){ this.setState(s=>({navOpen:!s.navOpen})); }
+  closeNav(){ this.setState({navOpen:false}); }
+
+  submitFlow(){
+    const f=this.state.form, t=this.state.flowType;
+    const qty=parseInt(f.qty,10);
+    if(!f.sku||!f.zone||!qty||qty<=0){ this.showToast('ข้อมูลไม่ครบ','กรุณาเลือกสินค้า โซน และจำนวนให้ถูกต้อง','bad'); return; }
+    const p=this.products.find(x=>x.sku===f.sku);
+    const avail=(this.state.stock[f.sku]&&this.state.stock[f.sku][f.zone])||0;
+    if(t==='out' && qty>avail){ this.showToast('สต๊อกไม่พอ','คงเหลือใน '+this.zoneName[f.zone]+' มีเพียง '+this.fmt(avail)+' '+p.unit,'bad'); return; }
+    this.setState(s=>{
+      const stock=JSON.parse(JSON.stringify(s.stock));
+      stock[f.sku][f.zone]=(stock[f.sku][f.zone]||0)+(t==='in'?qty:-qty);
+      const mv={id:Date.now(),ts:'วันนี้',time:new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}),type:t,sku:f.sku,name:p.name,qty,zone:f.zone,ref:f.ref||(t==='in'?'PO-NEW':'SO-NEW'),user:'สมชาย วงศ์ดี'};
+      const trend=s.trend.map((d,i)=> i===s.trend.length-1 ? {...d,[t]:d[t]+qty} : d);
+      return {stock,movements:[mv,...s.movements],trend,form:{...s.form,qty:'',ref:''}};
+    });
+    this.showToast(t==='in'?'รับเข้าสำเร็จ':'จ่ายออกสำเร็จ', (t==='in'?'+':'−')+this.fmt(qty)+' '+p.unit+' · '+p.name, 'good');
+  }
+
+  onLoginChange(e){ const{name,value}=e.target; this.setState(s=>({loginForm:{...s.loginForm,[name]:value}})); }
+  setLoginRole(role){ this.setState(s=>({loginForm:{...s.loginForm,role}})); }
+  loginCreds = {
+    admin:{u:'Admin01',p:'Admin001',name:'สมชาย วงศ์ดี',title:'ผู้ดูแลระบบ'},
+    user:{u:'User01',p:'User001',name:'อารยา ศรีสุข',title:'เจ้าหน้าที่คลัง'},
+  };
+  doLogin(){
+    const f=this.state.loginForm;
+    const c=this.loginCreds[f.role];
+    if((f.username||'').trim()!==c.u || (f.password||'')!==c.p){
+      this.showToast('เข้าสู่ระบบไม่สำเร็จ','Username หรือ Password ไม่ถูกต้อง','bad');
+      return;
+    }
+    this.setState({auth:{name:c.name,title:c.title,role:f.role,username:c.u,enc:this.encode(c.p)},route:'dashboard',loginForm:{username:'',password:'',role:f.role}});
+    this.showToast('เข้าสู่ระบบสำเร็จ','ยินดีต้อนรับ '+c.name,'good');
+  }
+  logout(){ this.setState({auth:null,profileOpen:false,themeOpen:false,drawer:null,editor:null,locEditor:null,listMgr:null}); }
+  openProfile(){ const a=this.state.auth; this.setState({profileOpen:true,themeOpen:false,profilePwVisible:false,profileForm:{name:a.name,title:a.title,role:a.role,username:a.username||'',changingPw:false,oldPw:'',newPw:'',confirmPw:''}}); }
+  toggleProfileChangePw(){ this.setState(s=>({profileForm:{...s.profileForm,changingPw:!s.profileForm.changingPw,oldPw:'',newPw:'',confirmPw:''},profilePwVisible:false})); }
+  onProfileChange(e){ const{name,value}=e.target; this.setState(s=>({profileForm:{...s.profileForm,[name]:value}})); }
+  setProfileRole(role){ this.setState(s=>({profileForm:{...s.profileForm,role}})); }
+  saveProfile(){
+    const f=this.state.profileForm, a=this.state.auth;
+    if(!String(f.name).trim()){ this.showToast('ข้อมูลไม่ครบ','กรุณากรอกชื่อผู้ใช้งาน','bad'); return; }
+    let enc=a.enc, changed=false;
+    if(f.changingPw){
+      if(this.decode(a.enc)!==String(f.oldPw||'')){ this.showToast('รหัสผ่านไม่ถูก','รหัสผ่านเดิมไม่ถูกต้อง','bad'); return; }
+      if(!String(f.newPw||'').trim()){ this.showToast('ข้อมูลไม่ครบ','กรุณากรอกรหัสผ่านใหม่','bad'); return; }
+      if(String(f.newPw)!==String(f.confirmPw)){ this.showToast('ยืนยันไม่ตรง','รหัสผ่านใหม่และยืนยันไม่ตรงกัน','bad'); return; }
+      enc=this.encode(String(f.newPw).trim()); changed=true;
+    }
+    this.setState({auth:{name:f.name.trim(),title:(f.title||'').trim()||'ผู้ใช้งาน',role:f.role,username:a.username,enc},profileOpen:false});
+    this.showToast('บันทึกข้อมูลผู้ใช้แล้ว',f.name.trim()+(changed?' · เปลี่ยนรหัสผ่านแล้ว':''),'good');
+  }
+
+  openListMgr(kind){ this.setState({listMgr:{kind,draft:'',editIndex:null,editValue:''}}); }
+  onListDraft(e){ const v=e.target.value; this.setState(s=>({listMgr:{...s.listMgr,draft:v}})); }
+  addListItem(){
+    const lm=this.state.listMgr, v=(lm.draft||'').trim();
+    const arr=lm.kind==='cat'?this.categories:this.units;
+    if(!v){ return; }
+    if(arr.includes(v)){ this.showToast('รายการซ้ำ','"'+v+'" มีอยู่แล้ว','bad'); return; }
+    arr.push(v);
+    this.setState(s=>({listMgr:{...s.listMgr,draft:''}}));
+    this.showToast('เพิ่มแล้ว', (lm.kind==='cat'?'หมวดหมู่ ':'หน่วยนับ ')+v,'good');
+  }
+  startEditItem(i){ const lm=this.state.listMgr; const arr=lm.kind==='cat'?this.categories:this.units; this.setState(s=>({listMgr:{...s.listMgr,editIndex:i,editValue:arr[i]}})); }
+  onEditItemChange(e){ const v=e.target.value; this.setState(s=>({listMgr:{...s.listMgr,editValue:v}})); }
+  saveEditItem(){
+    const lm=this.state.listMgr, v=(lm.editValue||'').trim(), i=lm.editIndex;
+    const arr=lm.kind==='cat'?this.categories:this.units;
+    if(!v){ return; }
+    const old=arr[i];
+    if(v!==old && arr.includes(v)){ this.showToast('รายการซ้ำ','"'+v+'" มีอยู่แล้ว','bad'); return; }
+    arr[i]=v;
+    this.products.forEach(p=>{ if(lm.kind==='cat'&&p.cat===old)p.cat=v; if(lm.kind==='unit'&&p.unit===old)p.unit=v; });
+    this.setState(s=>({listMgr:{...s.listMgr,editIndex:null,editValue:''}}));
+    this.showToast('แก้ไขแล้ว',old+' → '+v,'good');
+  }
+  deleteListItem(i){
+    const lm=this.state.listMgr;
+    const arr=lm.kind==='cat'?this.categories:this.units;
+    const val=arr[i];
+    const inUse=this.products.some(p=>(lm.kind==='cat'?p.cat:p.unit)===val);
+    if(inUse){ this.showToast('ลบไม่ได้','"'+val+'" ถูกใช้งานโดยสินค้าอยู่','bad'); return; }
+    arr.splice(i,1);
+    this.forceUpdate();
+    this.showToast('ลบแล้ว',val,'bad');
+  }
+
+  encode(str){
+    try{
+      const CK='MeeStock$ecret#2026';
+      const bytes=new TextEncoder().encode(String(str));
+      const key=new TextEncoder().encode(CK);
+      let bin='';
+      for(let i=0;i<bytes.length;i++){ bin+=String.fromCharCode(bytes[i]^key[i%key.length]); }
+      return btoa(bin);
+    }catch(e){ return ''; }
+  }
+  decode(enc){
+    try{
+      const CK='MeeStock$ecret#2026';
+      const bin=atob(String(enc));
+      const x=new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++){ x[i]=bin.charCodeAt(i); }
+      const key=new TextEncoder().encode(CK);
+      const out=new Uint8Array(x.length);
+      for(let i=0;i<x.length;i++){ out[i]=x[i]^key[i%key.length]; }
+      return new TextDecoder().decode(out);
+    }catch(e){ return ''; }
+  }
+
+  emptyUser(){
+    let max=0; this.users.forEach(u=>{ if(u.id>max)max=u.id; });
+    return {id:max+1,name:'',username:'',password:'',title:'',role:'user',active:true};
+  }
+  openAddUser(){ this.setState({userEditor:{mode:'add',form:this.emptyUser()},userPwVisible:false}); }
+  openEditUser(id){ const u=this.users.find(x=>x.id===id); if(!u)return; this.setState({userEditor:{mode:'edit',form:{id:u.id,name:u.name,username:u.username,password:this.decode(u.enc),title:u.title,role:u.role,active:u.active,resetPw:''}},userPwVisible:false}); }
+  genTempPw(){ const a='ABCDEFGHJKLMNPQRSTUVWXYZ',b='abcdefghijkmnpqrstuvwxyz',d='23456789'; const pick=s=>s[Math.floor(Math.random()*s.length)]; let core=''; for(let i=0;i<4;i++)core+=pick(b); return pick(a)+core+pick(d)+pick(d); }
+  resetPassword(){ const t=this.genTempPw(); this.setState(s=>({userEditor:{...s.userEditor,form:{...s.userEditor.form,resetPw:t}},userPwVisible:true})); }
+  cancelReset(){ this.setState(s=>({userEditor:{...s.userEditor,form:{...s.userEditor.form,resetPw:''}}})); }
+  toggleChangePw(){ this.setState(s=>({userEditor:{...s.userEditor,form:{...s.userEditor.form,changingPw:!s.userEditor.form.changingPw,oldPw:'',newPw:'',confirmPw:''}}})); }
+  onUserEditorChange(e){ const{name,value}=e.target; this.setState(s=>({userEditor:{...s.userEditor,form:{...s.userEditor.form,[name]:value}}})); }
+  setUserEditorRole(role){ this.setState(s=>({userEditor:{...s.userEditor,form:{...s.userEditor.form,role}}})); }
+  toggleUserEditorActive(){ this.setState(s=>({userEditor:{...s.userEditor,form:{...s.userEditor.form,active:!s.userEditor.form.active}}})); }
+  saveUser(){
+    const f=this.state.userEditor.form, mode=this.state.userEditor.mode;
+    if(!String(f.name).trim()||!String(f.username).trim()){ this.showToast('ข้อมูลไม่ครบ','กรุณากรอกชื่อและ Username','bad'); return; }
+    if(!String(f.password||'').trim()){ this.showToast('ข้อมูลไม่ครบ','กรุณากำหนด Password','bad'); return; }
+    if(this.users.some(u=>u.username===f.username.trim() && u.id!==f.id)){ this.showToast('Username ซ้ำ','"'+f.username.trim()+'" ถูกใช้แล้ว','bad'); return; }
+    if(mode==='add'){
+      this.users.push({id:f.id,name:f.name.trim(),username:f.username.trim(),enc:this.encode(String(f.password).trim()),title:(f.title||'').trim()||'ผู้ใช้งาน',role:f.role,active:!!f.active});
+      this.setState({userEditor:null});
+      this.showToast('เพิ่มผู้ใช้งานสำเร็จ', f.name.trim()+' · รหัสถูกเข้ารหัสแล้ว','good');
+    } else {
+      const u=this.users.find(x=>x.id===f.id);
+      if(!u){ this.setState({userEditor:null}); return; }
+      let didReset=false;
+      if(String(f.resetPw||'').trim()){ u.enc=this.encode(String(f.resetPw).trim()); didReset=true; }
+      u.name=f.name.trim(); u.username=f.username.trim(); u.title=(f.title||'').trim()||u.title; u.role=f.role; u.active=!!f.active;
+      this.setState({userEditor:null});
+      this.showToast('บันทึกข้อมูลผู้ใช้แล้ว', f.name.trim()+(didReset?' · รีเซ็ตรหัสผ่านแล้ว':''),'good');
+    }
+  }
+  deleteUser(){
+    const f=this.state.userEditor.form;
+    this.users=this.users.filter(u=>u.id!==f.id);
+    this.setState({userEditor:null});
+    this.showToast('ลบผู้ใช้งานแล้ว', f.name,'bad');
+  }
+  deleteUserById(id){
+    const u=this.users.find(x=>x.id===id);
+    this.users=this.users.filter(x=>x.id!==id);
+    this.forceUpdate();
+    this.showToast('ลบผู้ใช้งานแล้ว', u?u.name:'','bad');
+  }
+
+  emptyProduct(){
+    let max=1010; this.products.forEach(p=>{const m=(String(p.sku).match(/\d+/)||['0'])[0]; const n=parseInt(m,10); if(n>max)max=n;});
+    const id=max+1;
+    return {sku:'SKU-'+id,name:'',cat:(this.categories[0]||''),unit:(this.units[0]||''),price:'',min:'',barcode:'STK'+id};
+  }
+  openAddProduct(){ this.setState({editor:{mode:'add',form:this.emptyProduct()}}); }
+  openEditProduct(sku){ const p=this.products.find(x=>x.sku===sku); if(!p)return; this.setState({editor:{mode:'edit',form:{sku:p.sku,name:p.name,cat:p.cat,unit:p.unit,price:String(p.price),min:String(p.min),barcode:p.barcode}}}); }
+  onEditorChange(e){ const{name,value}=e.target; this.setState(s=>({editor:{...s.editor,form:{...s.editor.form,[name]:value}}})); }
+  saveProduct(){
+    const f=this.state.editor.form, mode=this.state.editor.mode;
+    if(!String(f.sku).trim()||!String(f.name).trim()){ this.showToast('ข้อมูลไม่ครบ','กรุณากรอก SKU และชื่อสินค้า','bad'); return; }
+    const price=parseFloat(f.price)||0, min=parseInt(f.min,10)||0;
+    if(mode==='add'){
+      if(this.products.some(p=>p.sku===f.sku)){ this.showToast('SKU ซ้ำ','มีรหัส '+f.sku+' อยู่ในระบบแล้ว','bad'); return; }
+      this.products.push({sku:f.sku.trim(),name:f.name.trim(),cat:(f.cat||'').trim()||'ทั่วไป',unit:(f.unit||'').trim()||'หน่วย',min,price,barcode:(f.barcode||'').trim()||f.sku.trim()});
+      const nc=(f.cat||'').trim(); if(nc&&!this.categories.includes(nc))this.categories.push(nc);
+      const nu=(f.unit||'').trim(); if(nu&&!this.units.includes(nu))this.units.push(nu);
+      this.setState(s=>{ const stock=JSON.parse(JSON.stringify(s.stock)); stock[f.sku]={}; this.zoneList.forEach(z=>{stock[f.sku][z]=0;}); return {stock,editor:null}; });
+      this.showToast('เพิ่มสินค้าสำเร็จ', f.sku+' · '+f.name,'good');
+    } else {
+      const p=this.products.find(x=>x.sku===f.sku);
+      if(p){ p.name=f.name.trim(); p.cat=(f.cat||'').trim()||p.cat; p.unit=(f.unit||'').trim()||p.unit; p.min=min; p.price=price; p.barcode=(f.barcode||'').trim()||p.barcode; }
+      this.setState({editor:null});
+      this.showToast('บันทึกการแก้ไขแล้ว', f.sku+' · '+f.name,'good');
+    }
+  }
+  deleteProduct(){
+    const sku=this.state.editor.form.sku;
+    this.products=this.products.filter(p=>p.sku!==sku);
+    this.setState(s=>{ const stock=JSON.parse(JSON.stringify(s.stock)); delete stock[sku]; return {stock,editor:null}; });
+    this.showToast('ลบสินค้าแล้ว', sku,'bad');
+  }
+
+  rebuildZones(){
+    this.zoneList=[]; this.zoneName={}; this.zoneCap={};
+    this.zonesMeta.forEach(w=>{ w.zones.forEach(z=>{ this.zoneList.push(z.code); this.zoneName[z.code]=w.wh+' · '+String(z.name).split(' · ')[0]; this.zoneCap[z.code]=z.cap; }); });
+  }
+  openAddWh(){ this.setState({locEditor:{mode:'addWh',form:{wh:''}}}); }
+  openEditWh(wi){ const w=this.zonesMeta[wi]; if(!w)return; this.setState({locEditor:{mode:'editWh',whIndex:wi,form:{wh:w.wh}}}); }
+  openAddZone(wi){ const w=this.zonesMeta[wi]; let prefix=((w.zones[0]&&w.zones[0].code)||'').split('-')[0]; if(!prefix)prefix=String.fromCharCode(65+wi); const code=prefix+'-Z'+(w.zones.length+1); this.setState({locEditor:{mode:'addZone',whIndex:wi,form:{code,name:'',cap:'1000'}}}); }
+  openEditZone(wi,code){ const z=this.zonesMeta[wi].zones.find(z=>z.code===code); if(!z)return; this.setState({locEditor:{mode:'editZone',whIndex:wi,code,form:{code:z.code,name:z.name,cap:String(z.cap)}}}); }
+  onLocChange(e){ const{name,value}=e.target; this.setState(s=>({locEditor:{...s.locEditor,form:{...s.locEditor.form,[name]:value}}})); }
+  saveLoc(){
+    const le=this.state.locEditor, f=le.form;
+    if(le.mode==='addWh'){
+      if(!String(f.wh).trim()){ this.showToast('ข้อมูลไม่ครบ','กรุณากรอกชื่อคลังสินค้า','bad'); return; }
+      this.zonesMeta.push({wh:f.wh.trim(),zones:[]}); this.rebuildZones(); this.setState({locEditor:null}); this.showToast('เพิ่มคลังสำเร็จ',f.wh.trim(),'good'); return;
+    }
+    if(le.mode==='editWh'){
+      if(!String(f.wh).trim()){ this.showToast('ข้อมูลไม่ครบ','กรุณากรอกชื่อคลังสินค้า','bad'); return; }
+      this.zonesMeta[le.whIndex].wh=f.wh.trim(); this.rebuildZones(); this.setState({locEditor:null}); this.showToast('บันทึกแล้ว',f.wh.trim(),'good'); return;
+    }
+    if(le.mode==='addZone'){
+      const code=String(f.code).trim();
+      if(!code||!String(f.name).trim()){ this.showToast('ข้อมูลไม่ครบ','กรุณากรอกรหัสและชื่อโซน','bad'); return; }
+      if(this.zoneList.includes(code)){ this.showToast('รหัสซ้ำ','มีโซน '+code+' อยู่แล้ว','bad'); return; }
+      const cap=parseInt(f.cap,10)||1000;
+      this.zonesMeta[le.whIndex].zones.push({code,name:f.name.trim(),cap}); this.rebuildZones();
+      this.setState(s=>{ const stock=JSON.parse(JSON.stringify(s.stock)); this.products.forEach(p=>{ if(!stock[p.sku])stock[p.sku]={}; stock[p.sku][code]=0; }); return {stock,locEditor:null}; });
+      this.showToast('เพิ่มโซนสำเร็จ',code,'good'); return;
+    }
+    if(le.mode==='editZone'){
+      if(!String(f.name).trim()){ this.showToast('ข้อมูลไม่ครบ','กรุณากรอกชื่อโซน','bad'); return; }
+      const z=this.zonesMeta[le.whIndex].zones.find(z=>z.code===le.code);
+      if(z){ z.name=f.name.trim(); z.cap=parseInt(f.cap,10)||z.cap; }
+      this.rebuildZones(); this.setState({locEditor:null}); this.showToast('บันทึกแล้ว',le.code,'good'); return;
+    }
+  }
+  deleteLoc(){
+    const le=this.state.locEditor;
+    if(le.mode==='editZone'){
+      const code=le.code; this.zonesMeta[le.whIndex].zones=this.zonesMeta[le.whIndex].zones.filter(z=>z.code!==code); this.rebuildZones();
+      this.setState(s=>{ const stock=JSON.parse(JSON.stringify(s.stock)); Object.keys(stock).forEach(sku=>{ delete stock[sku][code]; }); return {stock,locEditor:null}; });
+      this.showToast('ลบโซนแล้ว',code,'bad');
+    } else if(le.mode==='editWh'){
+      const wh=this.zonesMeta[le.whIndex]; const codes=wh.zones.map(z=>z.code);
+      this.zonesMeta=this.zonesMeta.filter((_,i)=>i!==le.whIndex); this.rebuildZones();
+      this.setState(s=>{ const stock=JSON.parse(JSON.stringify(s.stock)); Object.keys(stock).forEach(sku=>{ codes.forEach(c=>delete stock[sku][c]); }); return {stock,locEditor:null}; });
+      this.showToast('ลบคลังแล้ว',wh.wh,'bad');
+    }
+  }
+
+  openScanner(){ this.setState({scanOpen:true,camErr:false}); }
+  closeScanner(){ this.setState({scanOpen:false}); }
+  async startCamera(){
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      this._stream=stream;
+      const v=document.getElementById('sf-video'); if(v){ v.srcObject=stream; }
+    }catch(e){ this.setState({camErr:true}); }
+  }
+  stopCamera(){ if(this._stream){ this._stream.getTracks().forEach(t=>t.stop()); this._stream=null; } }
+  simulateScan(){
+    const pool=this.products;
+    const p=pool[Math.floor(Math.random()*pool.length)];
+    this.setState(s=>({scanOpen:false, codeSku:p.sku, form:{...s.form,sku:p.sku}}));
+    this.showToast('สแกนพบสินค้า', p.sku+' · '+p.name, 'good');
+  }
+
+  drawCodes(){
+    if(this.state.route!=='codes') return;
+    const p=this.products.find(x=>x.sku===this.state.codeSku);
+    if(!p) return;
+    const svg=document.getElementById('sf-barcode');
+    const qd=document.getElementById('sf-qr');
+    if(!window.JsBarcode || !window.QRCode || !svg || !qd){ clearTimeout(this._dr); this._dr=setTimeout(()=>this.drawCodes(),250); return; }
+    const key=p.sku;
+    if(this._codeDrawn===key && svg.children.length>0) return;
+    try{
+      window.JsBarcode(svg,p.barcode,{format:'CODE128',height:70,displayValue:true,fontSize:14,margin:6,background:'#ffffff',lineColor:'#0f1714'});
+      qd.innerHTML='';
+      new window.QRCode(qd,{text:p.sku+'|'+p.barcode+'|'+p.name,width:152,height:152,colorDark:'#0f1714',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
+      this._codeDrawn=key;
+    }catch(e){ /* ignore */ }
+  }
+
+  componentDidMount(){ setTimeout(()=>this.drawCodes(),120); }
+  componentDidUpdate(pp,ps){
+    ps=ps||{};
+    if(this.state.route==='codes' && (ps.route!=='codes'||ps.codeSku!==this.state.codeSku)){
+      this._codeDrawn=null; this.drawCodes();
+    }
+    if(this.state.scanOpen && !ps.scanOpen) this.startCamera();
+    if(!this.state.scanOpen && ps.scanOpen) this.stopCamera();
+  }
+  componentWillUnmount(){ this.stopCamera(); clearTimeout(this._tt); clearTimeout(this._dr); }
+
+  agg(){
+    const S=this.state;
+    return this.products.map(p=>{
+      const bz=S.stock[p.sku]||{};
+      const total=this.zoneList.reduce((a,z)=>a+(bz[z]||0),0);
+      const value=total*p.price;
+      const status=total<=0?'out':(total<p.min?'low':'ok');
+      return {...p,byZone:bz,total,value,status};
+    });
+  }
+
+  renderVals(){
+    const S=this.state, self=this;
+    const agg=this.agg();
+    const totalQty=agg.reduce((a,x)=>a+x.total,0);
+    const totalValue=agg.reduce((a,x)=>a+x.value,0);
+    const lowList=agg.filter(x=>x.status!=='ok');
+    const todayIn=S.trend[S.trend.length-1].in;
+    const todayOut=S.trend[S.trend.length-1].out;
+
+    // nav
+    const baseNav='display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:12px;border:none;cursor:pointer;width:100%;text-align:left;font-size:14px;font-weight:500;color:var(--dim);background:transparent;transition:background .18s,color .18s;';
+    const actNav='display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:12px;border:none;cursor:pointer;width:100%;text-align:left;font-size:14px;font-weight:600;color:var(--accent);background:color-mix(in srgb,var(--accent) 13%,transparent);box-shadow:inset 3px 0 0 var(--accent);transition:.18s;';
+    const navKeys=['dashboard','inbound','outbound','products','locations','codes','stockReport','moveReport','userMgmt'];
+    const routeToNav={dashboard:'dashboard',inbound:'inbound',outbound:'outbound',products:'products',locations:'locations',codes:'codes',stockReport:'stockReport',moveReport:'moveReport',userMgmt:'userMgmt'};
+    const navStyle={}, go={};
+    navKeys.forEach(k=>{ navStyle[k]=(S.route===k?actNav:baseNav); go[k]=()=>self.nav(k); });
+
+    // page titles
+    const titles={
+      dashboard:['แดชบอร์ดภาพรวม','สรุปสถานะคลังสินค้าแบบเรียลไทม์'],
+      inbound:['รับเข้าสินค้า','บันทึกการรับสินค้าเข้าคลังและอัปเดตสต๊อกอัตโนมัติ'],
+      outbound:['จ่ายออกสินค้า','บันทึกการจ่ายสินค้าออกจากคลัง'],
+      products:['รายการสินค้า','ข้อมูลสินค้าและระดับสต๊อกแต่ละรายการ'],
+      locations:['คลัง & พื้นที่','ติดตามสินค้าคงเหลือแยกตามคลังและโซน'],
+      codes:['Barcode / QR Code','สร้างและสแกนรหัสสินค้า'],
+      stockReport:['รายงานสินค้าคงเหลือ','สรุปคงเหลือและมูลค่าแยกตาม Location'],
+      moveReport:['รายงานการเคลื่อนไหว','ประวัติการรับเข้า–จ่ายออกทั้งหมด'],
+      userMgmt:['จัดการผู้ใช้งาน','เพิ่ม แก้ไข และกำหนดสิทธิ์ผู้ใช้งานระบบ'],
+    };
+    const tt=titles[S.route]||titles.dashboard;
+
+    // KPIs
+    const ic=(d)=>React.createElement('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},React.createElement('path',{d}));
+    const kpis=[
+      {label:'มูลค่าสต๊อกรวม',value:this.money(totalValue),delta:'+4.2%',sub:'จากเดือนก่อน',deltaColor:'var(--accent)',iconBg:'color-mix(in srgb,var(--accent) 13%,transparent)',iconColor:'var(--accent)',
+        icon:React.createElement('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},React.createElement('path',{d:'M12 1v22'}),React.createElement('path',{d:'M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'}))},
+      {label:'จำนวนสินค้า (SKU)',value:this.fmt(this.products.length),delta:this.fmt(totalQty),sub:'หน่วยคงเหลือ',deltaColor:'var(--info)',iconBg:'color-mix(in srgb,var(--info) 13%,transparent)',iconColor:'var(--info)',
+        icon:React.createElement('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},React.createElement('rect',{x:3,y:5,width:18,height:14,rx:2}),React.createElement('path',{d:'M3 10h18M9 5v14'}))},
+      {label:'รับเข้าวันนี้',value:'+'+this.fmt(todayIn),delta:'หน่วย',sub:'อัปเดตล่าสุด',deltaColor:'var(--accent)',iconBg:'color-mix(in srgb,var(--accent) 13%,transparent)',iconColor:'var(--accent)',
+        icon:React.createElement('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},React.createElement('path',{d:'M12 3v12'}),React.createElement('path',{d:'m7 10 5 5 5-5'}),React.createElement('path',{d:'M5 21h14'}))},
+      {label:'สินค้าใกล้/หมด',value:this.fmt(lowList.length),delta:'ต้องเติม',sub:'ตรวจสอบด่วน',deltaColor:'#f59e0b',iconBg:'color-mix(in srgb,#f59e0b 14%,transparent)',iconColor:'#f59e0b',
+        icon:React.createElement('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},React.createElement('path',{d:'M12 9v4M12 17h.01'}),React.createElement('path',{d:'M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z'}))},
+    ];
+
+    // trend chart
+    const T=S.trend, W=560,H=200,pt=18,pb=22,pl=10,pr=10;
+    const maxv=Math.max.apply(null,T.flatMap(d=>[d.in,d.out]).concat([1]));
+    const xstep=(W-pl-pr)/(T.length-1);
+    const X=i=>pl+i*xstep, Y=v=>H-pb-(v/maxv)*(H-pt-pb);
+    const trendIn=T.map((d,i)=>X(i).toFixed(1)+','+Y(d.in).toFixed(1)).join(' ');
+    const trendOut=T.map((d,i)=>X(i).toFixed(1)+','+Y(d.out).toFixed(1)).join(' ');
+    const trendArea='M '+X(0).toFixed(1)+','+(H-pb)+' L '+T.map((d,i)=>X(i).toFixed(1)+','+Y(d.in).toFixed(1)).join(' L ')+' L '+X(T.length-1).toFixed(1)+','+(H-pb)+' Z';
+    const trendDays=T.map((d,i)=>({x:X(i).toFixed(1),label:d.d}));
+    const trendDots=T.map((d,i)=>({x:X(i).toFixed(1),y:Y(d.in).toFixed(1)}));
+
+    // donut by zone
+    const zt=this.zoneList.map(z=>({z,qty:agg.reduce((a,x)=>a+(x.byZone[z]||0),0)}));
+    const dtot=zt.reduce((a,x)=>a+x.qty,0)||1;
+    const C=2*Math.PI*42; let accF=0;
+    const donutSegs=zt.map((x,i)=>{
+      const frac=x.qty/dtot;
+      const seg={color:this.palette[i%this.palette.length],dash:(frac*C).toFixed(1)+' '+C.toFixed(1),offset:(-accF*C).toFixed(1),name:this.zoneName[x.z],pct:Math.round(frac*100)};
+      accF+=frac; return seg;
+    });
+
+    // category chart
+    const catMap={};
+    agg.forEach(x=>{ catMap[x.cat]=(catMap[x.cat]||0)+x.total; });
+    const cats=Object.keys(catMap).map(c=>({cat:c,qty:catMap[c]})).sort((a,b)=>b.qty-a.qty);
+    const maxCat=Math.max.apply(null,cats.map(c=>c.qty).concat([1]));
+    const catChart=cats.map((c,i)=>({cat:c.cat,qty:this.fmt(c.qty),barStyle:'width:'+Math.max(4,Math.round(c.qty/maxCat*100))+'%;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent-3));'}));
+
+    // low stock
+    const lowStock=lowList.sort((a,b)=>(a.total/a.min)-(b.total/b.min)).map(x=>{
+      const si=this.statusInfo(x.status);
+      return {name:x.name,qty:this.fmt(x.total),min:this.fmt(x.min),unit:x.unit,statusText:si.t,badgeColor:si.c,badgeBg:si.bg};
+    });
+
+    // movements decorate
+    const decorMv=(m)=>{
+      const isIn=m.type==='in';
+      return {...m,sign:isIn?'+':'−',color:isIn?'var(--accent)':'#ef4444',iconBg:isIn?'color-mix(in srgb,var(--accent) 13%,transparent)':'color-mix(in srgb,#ef4444 12%,transparent)',zoneText:this.zoneName[m.zone],qtyText:this.fmt(m.qty),unit:(this.products.find(p=>p.sku===m.sku)||{}).unit||'',typeLabel:isIn?'รับเข้า':'จ่ายออก'};
+    };
+
+    // flow (inbound/outbound shared)
+    const isOut=S.route==='outbound';
+    S.flowType = isOut?'out':'in'; // keep in sync for submit
+    const flowUnit=(this.products.find(p=>p.sku===S.form.sku)||{}).unit||'หน่วย';
+    const availForm=this.fmt((S.stock[S.form.sku]&&S.stock[S.form.sku][S.form.zone])||0);
+    const flowIcon=React.createElement('svg',{width:22,height:22,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+      isOut?React.createElement('path',{d:'M12 15V3'}):React.createElement('path',{d:'M12 3v12'}),
+      isOut?React.createElement('path',{d:'m7 8 5-5 5 5'}):React.createElement('path',{d:'m7 10 5 5 5-5'}),
+      React.createElement('path',{d:'M5 21h14'}));
+    const flowRecent=S.movements.filter(m=>m.type===(isOut?'out':'in')).slice(0,8).map(decorMv);
+
+    // products table
+    const q=S.q.trim().toLowerCase();
+    const prodRows=agg.filter(x=>!q||(x.name+x.sku+x.cat).toLowerCase().includes(q)).map(x=>{
+      const si=this.statusInfo(x.status);
+      return {sku:x.sku,name:x.name,cat:x.cat,unit:x.unit,totalText:this.fmt(x.total),valueText:this.money(x.value),st:si.t,sc:si.c,sbg:si.bg,open:()=>self.setState({drawer:x.sku}),edit:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); self.openEditProduct(x.sku); }};
+    });
+
+    // locations
+    const warehouses=this.zonesMeta.map((w,wi)=>{
+      let whTotal=0;
+      const zones=w.zones.map(z=>{
+        const items=agg.filter(x=>(x.byZone[z.code]||0)>0).map(x=>({name:x.name,qty:this.fmt(x.byZone[z.code])}));
+        const total=agg.reduce((a,x)=>a+(x.byZone[z.code]||0),0);
+        whTotal+=total;
+        const cap=this.zoneCap[z.code]||1;
+        const used=Math.min(100,Math.round(total/cap*100));
+        return {code:z.code,name:z.name,items,itemCount:items.length,totalText:this.fmt(total),cap:this.fmt(cap),barStyle:'width:'+used+'%;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent-2));',onEdit:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); self.openEditZone(wi,z.code); }};
+      });
+      return {wh:w.wh,zones,zoneCount:zones.length,totalText:this.fmt(whTotal),onEdit:()=>self.openEditWh(wi),onAddZone:()=>self.openAddZone(wi)};
+    });
+
+    // stock report
+    const zoneHeads=this.zoneList.map(z=>({label:z}));
+    const repRows=agg.filter(x=>!q||(x.name+x.sku).toLowerCase().includes(q)).map(x=>{
+      const si=this.statusInfo(x.status);
+      return {sku:x.sku,name:x.name,z1:this.fmt(x.byZone['A-Z1']||0),z2:this.fmt(x.byZone['A-Z2']||0),z3:this.fmt(x.byZone['B-Z1']||0),z4:this.fmt(x.byZone['B-Z2']||0),totalText:this.fmt(x.total),st:si.t,sc:si.c,sbg:si.bg};
+    });
+
+    // movement report
+    const moveRows=S.movements.filter(m=>(S.moveFilter==='all'||m.type===S.moveFilter)&&(!q||(m.name+m.sku+m.zone+m.ref).toLowerCase().includes(q))).map(decorMv);
+    const mfBase='height:32px;padding:0 14px;border-radius:9px;border:1px solid var(--border);background:var(--card-2);color:var(--dim);font-size:12.5px;font-weight:600;cursor:pointer;';
+    const mfAct='height:32px;padding:0 14px;border-radius:9px;border:1px solid transparent;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;';
+    const moveFilters=[
+      {label:'ทั้งหมด',style:S.moveFilter==='all'?mfAct:mfBase,on:()=>self.setState({moveFilter:'all'})},
+      {label:'รับเข้า',style:S.moveFilter==='in'?mfAct:mfBase,on:()=>self.setState({moveFilter:'in'})},
+      {label:'จ่ายออก',style:S.moveFilter==='out'?mfAct:mfBase,on:()=>self.setState({moveFilter:'out'})},
+    ];
+
+    // codes
+    const codeList=this.products.map(p=>{
+      const act=p.sku===S.codeSku;
+      return {name:p.name,sku:p.sku,on:()=>self.setState({codeSku:p.sku}),style:'text-align:left;padding:11px 13px;border-radius:11px;cursor:pointer;border:1px solid '+(act?'var(--accent)':'var(--border)')+';background:'+(act?'color-mix(in srgb,var(--accent) 11%,transparent)':'var(--card-2)')+';color:'+(act?'var(--accent)':'var(--text)')+';'};
+    });
+    const cp=agg.find(x=>x.sku===S.codeSku)||agg[0];
+    const codeProduct={name:cp.name,cat:cp.cat,total:this.fmt(cp.total),unit:cp.unit};
+
+    // theme buttons
+    const themeDefs=[{key:'emerald',name:'มรกต',c:'#10b981'},{key:'ocean',name:'มหาสมุทร',c:'#0ea5b9'},{key:'violet',name:'ม่วง',c:'#7c5cfc'},{key:'amber',name:'อำพัน',c:'#ea8a0b'},{key:'rose',name:'กุหลาบ',c:'#f0407a'}];
+    const themeBtns=themeDefs.map(t=>({name:t.name,active:S.theme===t.key,on:()=>self.setState({theme:t.key}),style:'width:100%;aspect-ratio:1;border-radius:11px;cursor:pointer;border:2px solid '+(S.theme===t.key?'#fff':'transparent')+';background:'+t.c+';display:flex;align-items:center;justify-content:center;box-shadow:0 3px 9px -3px '+t.c+(S.theme===t.key?',0 0 0 2px '+t.c:'')+';'}));
+
+    // drawer
+    let drawer={open:false};
+    if(S.drawer){
+      const x=agg.find(a=>a.sku===S.drawer);
+      if(x){
+        const si=this.statusInfo(x.status);
+        const perZone=this.zoneList.map((z,i)=>{
+          const qv=x.byZone[z]||0; const pct=x.total?Math.round(qv/x.total*100):0;
+          return {zone:this.zoneName[z],qty:this.fmt(qv),pct,barStyle:'width:'+pct+'%;height:100%;border-radius:6px;background:'+this.palette[i%this.palette.length]+';'};
+        });
+        drawer={open:true,sku:x.sku,name:x.name,cat:x.cat,unit:x.unit,price:this.money(x.price),totalText:this.fmt(x.total),valueText:this.money(x.value),statusText:si.t,statusColor:si.c,perZone};
+      }
+    }
+
+    // product editor
+    const ed=S.editor;
+    const catSuggest=this.categories.map(v=>({value:v}));
+    const unitSuggest=this.units.map(v=>({value:v}));
+    const catOptions=this.categories.map(v=>({value:v,label:v}));
+    const unitOptions=this.units.map(v=>({value:v,label:v}));
+    const editor = ed
+      ? {open:true,isAdd:ed.mode==='add',canDelete:ed.mode==='edit',skuReadonly:ed.mode==='edit',title:ed.mode==='add'?'เพิ่มสินค้าใหม่':'แก้ไขข้อมูลสินค้า',saveLabel:ed.mode==='add'?'เพิ่มสินค้า':'บันทึก',form:ed.form}
+      : {open:false,isAdd:false,canDelete:false,skuReadonly:false,title:'',saveLabel:'บันทึก',form:{sku:'',name:'',cat:'',unit:'',price:'',min:'',barcode:''}};
+
+    // location editor
+    const lle=S.locEditor;
+    const locTitles={addWh:'เพิ่มคลังสินค้าใหม่',editWh:'แก้ไขคลังสินค้า',addZone:'เพิ่มโซน (Location)',editZone:'แก้ไขโซน (Location)'};
+    const locEditor = lle
+      ? {open:true,mode:lle.mode,title:locTitles[lle.mode],isWh:(lle.mode==='addWh'||lle.mode==='editWh'),isZone:(lle.mode==='addZone'||lle.mode==='editZone'),codeReadonly:lle.mode==='editZone',canDelete:(lle.mode==='editWh'||lle.mode==='editZone'),saveLabel:(lle.mode==='addWh'||lle.mode==='addZone')?'เพิ่ม':'บันทึก',form:lle.form}
+      : {open:false,mode:'',title:'',isWh:false,isZone:false,codeReadonly:false,canDelete:false,saveLabel:'บันทึก',form:{wh:'',code:'',name:'',cap:''}};
+
+    // auth / user / role
+    const auth=S.auth;
+    const isAdmin = !!auth && auth.role==='admin';
+    const userName = auth?auth.name:'';
+    const userTitle = auth?auth.title:'';
+    const roleLabel = auth?(auth.role==='admin'?'Admin':'User'):'';
+    const userInitial = userName?userName.trim().charAt(0):'?';
+    const segStyle=(active)=>'flex:1;height:44px;border-radius:11px;cursor:pointer;font-size:14px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1.5px solid '+(active?'var(--accent)':'var(--border)')+';background:'+(active?'color-mix(in srgb,var(--accent) 12%,transparent)':'var(--card-2)')+';color:'+(active?'var(--accent)':'var(--dim)')+';';
+    const lf=S.loginForm;
+    const loginRoleSeg={admin:segStyle(lf.role==='admin'),user:segStyle(lf.role==='user')};
+    const pf=S.profileForm;
+    const profRoleBtn=(role)=>'flex:1;height:40px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;border:1.5px solid '+(pf.role===role?'var(--accent)':'var(--border)')+';background:'+(pf.role===role?'color-mix(in srgb,var(--accent) 12%,transparent)':'var(--card-2)')+';color:'+(pf.role===role?'var(--accent)':'var(--dim)')+';';
+
+    // list manager (categories / units)
+    const lm=S.listMgr;
+    let listMgr={open:false};
+    if(lm){
+      const arr=lm.kind==='cat'?this.categories:this.units;
+      const items=arr.map((v,i)=>({value:v,editing:lm.editIndex===i,notEditing:lm.editIndex!==i,onEdit:()=>self.startEditItem(i),onDelete:()=>self.deleteListItem(i)}));
+      listMgr={open:true,kind:lm.kind,title:lm.kind==='cat'?'จัดการหมวดหมู่สินค้า':'จัดการหน่วยนับ',label:lm.kind==='cat'?'หมวดหมู่':'หน่วยนับ',draft:lm.draft,editIndex:lm.editIndex,editValue:lm.editValue,items,count:arr.length};
+    }
+
+    // user management
+    const roleBadge=(role)=> role==='admin'
+      ? {label:'Admin',color:'var(--accent)',bg:'color-mix(in srgb,var(--accent) 13%,transparent)'}
+      : {label:'User',color:'var(--info)',bg:'color-mix(in srgb,var(--info) 13%,transparent)'};
+    const userRows=this.users.map(u=>{
+      const rb=roleBadge(u.role);
+      return {id:u.id,name:u.name,username:u.username,title:u.title,initial:(u.name||'?').trim().charAt(0),
+        roleLabel:rb.label,roleColor:rb.color,roleBg:rb.bg,
+        active:u.active,statusText:u.active?'ใช้งาน':'ปิดใช้งาน',
+        statusColor:u.active?'var(--accent)':'var(--faint)',statusBg:u.active?'color-mix(in srgb,var(--accent) 12%,transparent)':'color-mix(in srgb,var(--faint) 16%,transparent)',
+        avatarBg:u.active?'linear-gradient(140deg,var(--accent-3),var(--accent-2))':'linear-gradient(140deg,#9aa6a1,#76847e)',
+        edit:()=>self.openEditUser(u.id),del:()=>self.deleteUserById(u.id)};
+    });
+    const ue=S.userEditor;
+    const ueRoleBtn=(role)=> ue && ue.form.role===role
+      ? 'flex:1;height:40px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;border:1.5px solid var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);'
+      : 'flex:1;height:40px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;border:1.5px solid var(--border);background:var(--card-2);color:var(--dim);';
+    const ueActive = ue?ue.form.active:true;
+    const pwVisible = !!S.userPwVisible;
+    const ueIsEdit = ue ? ue.mode==='edit' : false;
+    const ueReset = ue ? !!String(ue.form.resetPw||'').trim() : false;
+    const encSource = ue ? (ueIsEdit ? (ueReset ? ue.form.resetPw : this.decode((this.users.find(x=>x.id===ue.form.id)||{}).enc||'')) : (ue.form.password||'')) : '';
+    const encPreview = ue ? this.encode(String(encSource)) : '';
+    const userEditor = ue
+      ? {open:true,canDelete:ue.mode==='edit',isEdit:ueIsEdit,isAdd:ue.mode==='add',didReset:ueReset,notReset:!ueReset,title:ue.mode==='add'?'เพิ่มผู้ใช้งานใหม่':'แก้ไขข้อมูลผู้ใช้งาน',saveLabel:ue.mode==='add'?'เพิ่มผู้ใช้งาน':'บันทึก',form:ue.form,
+          roleAdmin:ueRoleBtn('admin'),roleUser:ueRoleBtn('user'),active:ueActive,
+          pwType:pwVisible?'text':'password',pwVisible:pwVisible,pwHidden:!pwVisible,encPreview:encPreview,hasPw:!!String(ue.form.password||'').length,
+          activeTrackBg:ueActive?'var(--accent)':'#cbd5d1',activeKnobX:ueActive?'19px':'2px',activeLabel:ueActive?'เปิดใช้งาน':'ปิดใช้งาน'}
+      : {open:false,canDelete:false,isEdit:false,isAdd:false,didReset:false,notReset:true,title:'',saveLabel:'บันทึก',form:{name:'',username:'',password:'',title:'',role:'user',active:true},roleAdmin:'',roleUser:'',active:true,pwType:'password',pwVisible:false,pwHidden:true,encPreview:'',hasPw:false,activeTrackBg:'#cbd5d1',activeKnobX:'2px',activeLabel:''};
+
+    // toast
+    const tk=S.toast?S.toast.kind:'good';
+    const toastIcon=React.createElement('svg',{width:17,height:17,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2.3,strokeLinecap:'round',strokeLinejoin:'round'},
+      tk==='bad'?React.createElement('path',{d:'M18 6 6 18M6 6l12 12'}):React.createElement('path',{d:'m5 13 4 4L19 7'}));
+    const toast={show:!!S.toast,title:S.toast?S.toast.title:'',msg:S.toast?S.toast.msg:'',icon:toastIcon,
+      color:tk==='bad'?'#ef4444':'var(--accent)',bg:tk==='bad'?'color-mix(in srgb,#ef4444 12%,transparent)':'color-mix(in srgb,var(--accent) 13%,transparent)'};
+
+    // mode toggle visuals
+    const dark=S.mode==='dark';
+    const modeIcon=React.createElement('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+      dark?React.createElement('path',{d:'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z'}):[React.createElement('circle',{key:'c',cx:12,cy:12,r:4}),React.createElement('path',{key:'p',d:'M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5'})]);
+
+    return {
+      brand:this.props.brand||'StockFlow',
+      decor:this.props.decor!==false,
+      themeName:S.theme, modeName:S.mode,
+      // auth
+      loggedIn:!!auth, notLoggedIn:!auth, isAdmin, notAdmin:(!!auth && !isAdmin),
+      navOpen:S.navOpen, asideClass:('sf-aside'+(S.navOpen?' sf-open':'')), toggleNav:()=>self.toggleNav(), closeNav:()=>self.closeNav(),
+      userName, userTitle, roleLabel, userInitial,
+      loginForm:S.loginForm, onLoginChange:(e)=>self.onLoginChange(e), doLogin:()=>self.doLogin(),
+      loginUserPlaceholder: lf.role==='admin'?'Admin01':'User01',
+      loginHint: lf.role==='admin'?'Admin · Admin01 / Admin001':'User · User01 / User001',
+      loginRoleSeg, setRoleAdmin:()=>self.setLoginRole('admin'), setRoleUser:()=>self.setLoginRole('user'),
+      logout:()=>self.logout(),
+      // profile
+      profileOpen:S.profileOpen, openProfile:()=>self.openProfile(), closeProfile:()=>self.setState({profileOpen:false}),
+      profileForm:S.profileForm, onProfileChange:(e)=>self.onProfileChange(e), saveProfile:()=>self.saveProfile(),
+      profRoleAdmin:profRoleBtn('admin'), profRoleUser:profRoleBtn('user'),
+      setProfAdmin:()=>self.setProfileRole('admin'), setProfUser:()=>self.setProfileRole('user'),
+      profChangingPw: !!(S.profileForm&&S.profileForm.changingPw), profNotChangingPw: !(S.profileForm&&S.profileForm.changingPw),
+      profNewEnc: this.encode(String((S.profileForm&&S.profileForm.newPw)||'')),
+      toggleProfileChangePw:()=>self.toggleProfileChangePw(),
+      pageTitle:tt[0], pageSub:tt[1],
+      q:S.q, onSearch:(e)=>self.setState({q:e.target.value}),
+      navStyle, go,
+      themeOpen:S.themeOpen, toggleThemeOpen:()=>self.setState(s=>({themeOpen:!s.themeOpen})),
+      themeBtns, toggleMode:()=>self.setState(s=>({mode:s.mode==='dark'?'light':'dark'})),
+      modeIcon, modeLabel:dark?'โหมดมืด':'โหมดสว่าง', modeTrackBg:dark?'var(--accent)':'#cbd5d1', modeKnobX:dark?'19px':'2px',
+      r:{dashboard:S.route==='dashboard',flow:(S.route==='inbound'||S.route==='outbound'),products:S.route==='products',locations:S.route==='locations',stockReport:S.route==='stockReport',moveReport:S.route==='moveReport',codes:S.route==='codes',userMgmt:(S.route==='userMgmt' && isAdmin)},
+      kpis,
+      trendIn,trendOut,trendArea,trendDays,trendDots,
+      donutSegs,donutTotal:this.fmt(dtot),
+      catChart, lowStock, lowCount:this.fmt(lowList.length),
+      // flow
+      flowFormTitle:isOut?'บันทึกการจ่ายออก':'บันทึกการรับเข้า',
+      flowFormSub:isOut?'ตัดสต๊อกออกจากโซนที่เลือกอัตโนมัติ':'เพิ่มสต๊อกเข้าโซนที่เลือกอัตโนมัติ',
+      flowIcon,flowIconBg:isOut?'color-mix(in srgb,#ef4444 12%,transparent)':'color-mix(in srgb,var(--accent) 13%,transparent)',flowIconColor:isOut?'#ef4444':'var(--accent)',
+      flowLocLabel:isOut?'จ่ายจากโซน':'รับเข้าโซน',
+      flowUnit, flowBtnLabel:isOut?'ยืนยันจ่ายออก':'ยืนยันรับเข้า',
+      flowRefPlaceholder:isOut?'เช่น SO-2401':'เช่น PO-7781',
+      flowRecentTitle:isOut?'ประวัติการจ่ายออกล่าสุด':'ประวัติการรับเข้าล่าสุด',
+      flowRecent, availForm,
+      form:S.form, onFormChange:(e)=>{const{name,value}=e.target;self.setState(s=>({form:{...s.form,[name]:value}}));},
+      submitFlow:()=>self.submitFlow(),
+      productOptions:this.products.map(p=>({value:p.sku,label:p.sku+' · '+p.name})),
+      zoneOptions:this.zoneList.map(z=>({value:z,label:this.zoneName[z]})),
+      // products
+      prodRows, prodCount:prodRows.length,
+      // locations
+      warehouses,
+      // reports
+      zoneHeads, repRows, totalValueText:this.money(totalValue), totalQtyText:this.fmt(totalQty),
+      moveRows, moveFilters,
+      exportToast:()=>self.showToast('กำลังส่งออก','สร้างไฟล์รายงาน Excel (.xlsx)','good'),
+      printToast:()=>self.showToast('กำลังพิมพ์ฉลาก','ส่งฉลากไปยังเครื่องพิมพ์','good'),
+      // codes
+      codeList, codeProduct, barcodeRef:this.barcodeRef, qrRef:this.qrRef,
+      // scanner
+      openScan:()=>self.openScanner(), closeScan:()=>self.closeScanner(), scanOpen:S.scanOpen, camErr:S.camErr,
+      videoRef:this.videoRef, simulateScan:()=>self.simulateScan(), stop:(e)=>e.stopPropagation(),
+      // drawer
+      drawer, closeDrawer:()=>self.setState({drawer:null}),
+      drawerToInbound:()=>self.setState(s=>({route:'inbound',drawer:null,q:'',form:{...s.form,sku:s.drawer}})),
+      drawerToOutbound:()=>self.setState(s=>({route:'outbound',drawer:null,q:'',form:{...s.form,sku:s.drawer}})),
+      // product editor
+      editor, catSuggest, unitSuggest, catOptions, unitOptions,
+      openAddProduct:()=>self.openAddProduct(),
+      onEditorChange:(e)=>self.onEditorChange(e),
+      saveProduct:()=>self.saveProduct(),
+      deleteProduct:()=>self.deleteProduct(),
+      closeEditor:()=>self.setState({editor:null}),
+      // list manager
+      listMgr, openCatMgr:()=>self.openListMgr('cat'), openUnitMgr:()=>self.openListMgr('unit'),
+      closeListMgr:()=>self.setState({listMgr:null}),
+      onListDraft:(e)=>self.onListDraft(e), addListItem:()=>self.addListItem(),
+      onEditItemChange:(e)=>self.onEditItemChange(e), saveEditItem:()=>self.saveEditItem(),
+      // location editor
+      locEditor, openAddWh:()=>self.openAddWh(), onLocChange:(e)=>self.onLocChange(e), saveLoc:()=>self.saveLoc(), deleteLoc:()=>self.deleteLoc(), closeLocEditor:()=>self.setState({locEditor:null}),
+      // user management
+      userRows, userEditor,
+      openAddUser:()=>self.openAddUser(),
+      onUserEditorChange:(e)=>self.onUserEditorChange(e),
+      setUserRoleAdmin:()=>self.setUserEditorRole('admin'), setUserRoleUser:()=>self.setUserEditorRole('user'),
+      toggleUserActive:()=>self.toggleUserEditorActive(),
+      toggleUserPw:()=>self.setState(s=>({userPwVisible:!s.userPwVisible})),
+      toggleChangePw:()=>self.toggleChangePw(),
+      resetPassword:()=>self.resetPassword(), cancelReset:()=>self.cancelReset(),
+      saveUser:()=>self.saveUser(), deleteUser:()=>self.deleteUser(), closeUserEditor:()=>self.setState({userEditor:null}),
+      // toast
+      toast,
+    };
+  }
+}
+</script>
+</body>
+</html>
