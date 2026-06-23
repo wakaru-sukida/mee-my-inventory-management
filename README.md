@@ -3,8 +3,7 @@
 แอปจัดการคลังสินค้าที่ทำงานได้จริง พัฒนาต่อจากดีไซน์ `StockFlow.dc.html` (Claude Design Composer)
 ให้กลายเป็นเว็บแอป React + Vite ที่ **เก็บข้อมูลถาวร** ผ่าน Supabase และ **deploy ขึ้นโฮสต์ฟรี** ได้
 
-[Mee Stock]([(https://mee-my-inventory-management.vercel.app/]).
-[Visit Example](https://example.com){:target="_blank"}
+[Mee Stock](https://mee-my-inventory-management.vercel.app/)
 
 
 ## ฟีเจอร์
