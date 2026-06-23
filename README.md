@@ -4,6 +4,8 @@
 ให้กลายเป็นเว็บแอป React + Vite ที่ **เก็บข้อมูลถาวร** ผ่าน Supabase และ **deploy ขึ้นโฮสต์ฟรี** ได้
 
 [Mee Stock]([(https://mee-my-inventory-management.vercel.app/]).
+[Visit Example](https://example.com){:target="_blank"}
+
 
 ## ฟีเจอร์
 - 🔐 เข้าสู่ระบบแยกสิทธิ์ **Admin / User**
